@@ -11,11 +11,9 @@ def send_test_event(query):
         "Content-Type": "application/json",
     }
     response = requests.post(url=url, data=json.dumps(query_data), headers=headers)
-    print(f"Status Code: {response.status_code}")
-    print(f"Response: {response.json()}")
-    print(f"Full Response Headers: {response.headers}")
-
+    print(response.json()["answer"])
+    return response
 
 if __name__ == "__main__":
-    query = "Can you explain how to use FastAPI?"
+    query = "What are the bootstrapping and random forest algorithms?"
     send_test_event(query)
