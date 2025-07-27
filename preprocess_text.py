@@ -1,4 +1,4 @@
-from PyPDF2 import PdfReader
+import fitz
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from sentence_transformers import SentenceTransformer
 from openai import OpenAI
@@ -19,9 +19,14 @@ def convert_raw_data_to_txt(path_to_raw_data = PATH_TO_RAW_DATA, path_to_text_da
     """
     text=[]
     for chapter in sorted(os.listdir(path_to_raw_data)):
-        reader = PdfReader(f"{path_to_raw_data}/{chapter}")
-        for page in reader.pages:
-            text.append(page.extract_text())
+        if not chapter.lower().endswith(".pdf"):
+            continue
+        doc = fitz.open(f"{path_to_raw_data}/{chapter}") #PyMuPDF
+        for page in doc:
+            text.append(page.get_text())          
+        # reader = PdfReader(f"{path_to_raw_data}/{chapter}") #PyPDf2
+        # for page in reader.pages:
+        #     text.append(page.extract_text())
     text = " ".join(text).replace("\xa0", " ").strip()
     with open(f"{path_to_text_data}/notes.txt", 'w', encoding='utf-8') as f:
         f.write(text)
