@@ -18,7 +18,7 @@ def convert_raw_data_to_txt(path_to_raw_data = PATH_TO_RAW_DATA, path_to_text_da
     Takes pdf data stored in path_to_raw_data and saves it to a txt file in path_to_text_data
     """
     text=[]
-    for _, chapter in enumerate(os.listdir(path_to_raw_data)):
+    for chapter in sorted(os.listdir(path_to_raw_data)):
         reader = PdfReader(f"{path_to_raw_data}/{chapter}")
         for page in reader.pages:
             text.append(page.extract_text())
