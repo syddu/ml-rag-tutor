@@ -10,6 +10,7 @@ app.include_router(process_router)
 
 origins = [
     "http://localhost:3000",
+    "https://sydney-du.vercel.app"
 ]
 
 app.add_middleware(
