@@ -69,7 +69,12 @@ def embed_chunks_openai(chunks = None, model_name = "text-embedding-3-small"):
     with open(f"{PATH_TO_OPENAI_EMBEDDINGS}/embeddings.json", "w", encoding="utf-8") as f:
         f.write(json.dumps(embeddings))
     return embeddings
+def prepare_data():
+    convert_raw_data_to_txt()
+    chunks = chunk_text_data()
+    return embed_chunks_sentencetransformers(chunks) 
 
 if __name__ == "__main__":
     #embed more chunks as needed
+    prepare_data()
     pass
