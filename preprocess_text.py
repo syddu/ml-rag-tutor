@@ -10,28 +10,26 @@ import numpy as np
 PATH_TO_RAW_DATA = "/Users/sydneydu/Projects/intro_ml_rag_assistant/raw_data"
 PATH_TO_TEXT_DATA = "/Users/sydneydu/Projects/intro_ml_rag_assistant/data"
 PATH_TO_CHUNKS = "/Users/sydneydu/Projects/intro_ml_rag_assistant/chunks"
-PATH_TO_SENTENCETRANSFORMERS_EMBEDDINGS = (
-    "/Users/sydneydu/Projects/intro_ml_rag_assistant/embeddings/sentencetransformers"
-)
-PATH_TO_OPENAI_EMBEDDINGS = (
-    "/Users/sydneydu/Projects/intro_ml_rag_assistant/embeddings/openai"
-)
+PATH_TO_SENTENCETRANSFORMERS_EMBEDDINGS = "/Users/sydneydu/Projects/intro_ml_rag_assistant/embeddings/sentencetransformers"
+PATH_TO_OPENAI_EMBEDDINGS = "/Users/sydneydu/Projects/intro_ml_rag_assistant/embeddings/openai"
 
-
-def convert_raw_data_to_txt(
-    path_to_raw_data=PATH_TO_RAW_DATA, path_to_text_data=PATH_TO_TEXT_DATA
-):
-    text = []
+def convert_raw_data_to_txt(path_to_raw_data = PATH_TO_RAW_DATA, path_to_text_data = PATH_TO_TEXT_DATA):
+    """
+    Takes pdf data stored in path_to_raw_data and saves it to a txt file in path_to_text_data
+    """
+    text=[]
     for _, chapter in enumerate(os.listdir(path_to_raw_data)):
         reader = PdfReader(f"{path_to_raw_data}/{chapter}")
         for page in reader.pages:
             text.append(page.extract_text())
     text = " ".join(text).replace("\xa0", " ").strip()
-    with open(f"{path_to_text_data}/notes.txt", "w", encoding="utf-8") as f:
+    with open(f"{path_to_text_data}/notes.txt", 'w', encoding='utf-8') as f:
         f.write(text)
-
-
-def chunk_text_data(path_to_text_data=PATH_TO_TEXT_DATA, path_to_chunks=PATH_TO_CHUNKS):
+        
+def chunk_text_data(path_to_text_data = PATH_TO_TEXT_DATA, path_to_chunks = PATH_TO_CHUNKS):
+    """
+    Uses LangChain RecursiveCharacterTextSplitter to chunk the text data in path_to_text_data into semantically significant chunks
+    """
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=200,
         chunk_overlap=20,
@@ -47,39 +45,31 @@ def chunk_text_data(path_to_text_data=PATH_TO_TEXT_DATA, path_to_chunks=PATH_TO_
         f.write(json.dumps(chunks))
     return chunks
 
-
-def embed_chunks_sentencetransformers(chunks=None, model_name="all-MiniLM-L6-v2"):
+def embed_chunks_sentencetransformers(chunks = None, model_name = "all-MiniLM-L6-v2"):
     if chunks is None:
         chunks = json.load(open(f"{PATH_TO_CHUNKS}/chunks.json", "r", encoding="utf-8"))
     model = SentenceTransformer(model_name)
     embeddings = model.encode(chunks)
     embeddings = [emb.tolist() for emb in embeddings]
-    with open(
-        f"{PATH_TO_SENTENCETRANSFORMERS_EMBEDDINGS}/embeddings.json",
-        "w",
-        encoding="utf-8",
-    ) as f:
+    with open(f"{PATH_TO_SENTENCETRANSFORMERS_EMBEDDINGS}/embeddings.json", "w", encoding="utf-8") as f:
         f.write(json.dumps(embeddings))
     return embeddings
 
-
-def embed_chunks_openai(chunks=None, model_name="text-embedding-3-small"):
+def embed_chunks_openai(chunks = None, model_name = "text-embedding-3-small"):
     if chunks is None:
         chunks = json.load(open(f"{PATH_TO_CHUNKS}/chunks.json", "r", encoding="utf-8"))
     load_dotenv()
-    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    client = OpenAI(api_key = os.getenv("OPENAI_API_KEY"))
     response = client.embeddings.create(
-        model=model_name, input=chunks, encoding_format="float"
+        model=model_name,
+        input=chunks,
+        encoding_format="float"
     )
     embeddings = [item.embedding for item in response.data]
-    with open(
-        f"{PATH_TO_OPENAI_EMBEDDINGS}/embeddings.json", "w", encoding="utf-8"
-    ) as f:
+    with open(f"{PATH_TO_OPENAI_EMBEDDINGS}/embeddings.json", "w", encoding="utf-8") as f:
         f.write(json.dumps(embeddings))
     return embeddings
 
-
 if __name__ == "__main__":
-    # embed more chunks as needed
-
+    #embed more chunks as needed
     pass

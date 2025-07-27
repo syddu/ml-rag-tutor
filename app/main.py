@@ -3,18 +3,15 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List
+from router import router as process_router
 
-class Explanation(BaseModel):
-    topic: str
-    prerequisites: List[str]
-    explanation: str
-    example: str
-    difficulty: int
-    
 app = FastAPI()
+app.include_router(process_router)
+
 origins = [
     "http://localhost:3000",
 ]
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
