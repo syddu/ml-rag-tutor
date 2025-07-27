@@ -5,3 +5,5 @@ sentence-transformers
 openai
 faiss-cpu
 python-dotenv
+PyPDF2
+langchain

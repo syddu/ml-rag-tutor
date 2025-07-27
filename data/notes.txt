@@ -1,0 +1,1413 @@
+  
+1 Introduction
+The main focus of machine learning (ML) is making decisions or predictions based on
+data. There are a number of other ﬁelds with signiﬁcant overlap in technique, but
+difference in focus: in economics and psychology, the goal is to discover underlying
+causal processes and in statistics it is to ﬁnd a model that ﬁts a data set well. In
+those ﬁelds, the end product is a model. In machine learning, we often ﬁt models,
+but as a means to the end of making good predictions or decisions.
+As ML methods have improved in their capability and scope, ML has become
+arguably the best way–measured in terms of speed, human engineering time, and
+robustness–to approach many applications. Great examples are face detection,
+speech recognition, and many kinds of language-processing tasks. Almost any
+application that involves understanding data or signals that come from the real
+world can be nicely addressed using machine learning.
+One crucial aspect of machine learning approaches to solving problems is that
+human engineering plays an important role. A human still has to frame the problem:
+acquire and organize data, design a space of possible solutions, select a learning
+algorithm and its parameters, apply the algorithm to the data, validate the resulting
+solution to decide whether it’s good enough to use, try to understand the impact on
+the people who will be affected by its deployment, etc. These steps are of great
+importance.
+The conceptual basis of learning from data is the problem of induction: Why do we
+think that previously seen data will help us predict the future? This is a serious long
+standing philosophical problem. We will operationalize it by making assumptions,
+such as that all training data are so-called i.i.d.(independent and identically
+distributed), and that queries will be drawn from the same distribution as the
+training data, or that the answer comes from a set of possible answers known in
+advance.6.390 - Intro to Machine Learning
+Course Notes
+This description is paraphrased
+from a post on 9/4/12 at
+andrewgelman.com.
+This aspect is often undervalued.
+This means that the elements in the
+set are related in the sense that
+they all come from the same
+underlying probability
+distribution, but not in other ways. 1  Introduction  In general, we need to solve these two problems:
+estimation: When we have data that are noisy reﬂections of some underlying
+quantity of interest, we have to aggregate the data and make estimates or
+predictions about the quantity. How do we deal with the fact that, for example,
+the same treatment may end up with different results on different trials? How
+can we predict how well an estimate may compare to future results?
+generalization: How can we predict results of a situation or experiment that
+we have never encountered before in our data set?
+We can describe problems and their solutions using six characteristics, three of
+which characterize the problem and three of which characterize the solution:
+1. Problem class: What is the nature of the training data and what kinds of
+queries will be made at testing time?
+2. Assumptions: What do we know about the source of the data or the form of
+the solution?
+3. Evaluation criteria: What is the goal of the prediction or estimation system?
+How will the answers to individual queries be evaluated? How will the overall
+performance of the system be measured?
+4. Model type: Will an intermediate model of the world be made? What aspects
+of the data will be modeled in different variables/parameters? How will the
+model be used to make predictions?
+5. Model class: What particular class of models will be used? What criterion will
+we use to pick a particular model from the model class?
+6. Algorithm: What computational process will be used to ﬁt the model to the
+data and/or to make predictions?
+Without making some assumptions about the nature of the process generating the
+data, we cannot perform generalization. In the following sections, we elaborate on
+these ideas.
+1.1 Problem class
+There are many different problem classes in machine learning. They vary according to
+what kind of data is provided and what kind of conclusions are to be drawn from it.
+Five standard problem classes are described below, to establish some notation and
+terminology.
+In this course, we will focus on classiﬁcation and regression (two examples of
+supervised learning), and we will touch on reinforcement learning, sequence
+learning, and clustering.For example, the same treatment
+may end up with different results
+on different trials. How can we
+predict how well an estimate
+compares to future results?
+Don’t feel you have to memorize
+all these kinds of learning, etc. We
+just want you to have a very high- The idea of supervised learning is that the learning system is given inputs and told
+which speciﬁc outputs should be associated with them. We divide up supervised
+learning based on whether the outputs are drawn from a small ﬁnite set
+(classiﬁcation) or a large ﬁnite ordered set or continuous set (regression).
+For a regression problem, the training data  is in the form of a set of  pairs:
+where  represents an input, most typically a -dimensional vector of real and/or
+discrete values, and  is the output to be predicted, in this case a real-number. The
+ values are sometimes called target values.
+The goal in a regression problem is ultimately, given a new input value , to
+predict the value of . Regression problems are a kind of supervised learning,
+because the desired output  is speciﬁed for each of the training examples .
+A classiﬁcation problem is like regression, except that the values that  can take
+do not have an order. The classiﬁcation problem is binary or two-class if  (also
+known as the class) is drawn from a set of two possible values; otherwise, it is called
+multi-class.
+Unsupervised learning doesn’t involve learning a function from inputs to outputs
+based on a set of input-output pairs. Instead, one is given a data set and generally
+expected to ﬁnd some patterns or structure inherent in it.
+Given samples , the goal is to ﬁnd a partitioning (or “clustering”)
+of the samples that groups together similar samples. There are many different
+objectives, depending on the deﬁnition of the similarity between samples and
+exactly what criterion is to be used (e.g., minimize the average distance between
+elements inside a cluster and maximize the average distance between elements
+across clusters). Other methods perform a “soft” clustering, in which samples may
+be assigned 0.9 membership in one cluster and 0.1 in another. Clustering is
+sometimes used as a step in the so-called density estimation (described below), and
+sometimes to ﬁnd useful structure or inﬂuential features in data.
+1.1.1 Supervised learning
+1.1.1.1 RegressionDtrain n
+Dtrain={(x(1),y(1)),…,(x(n),y(n))},
+x(i)d
+y(i)
+y
+x(n+1)
+y(n+1)
+y(i)x(i)
+1.1.1.2 Classiﬁcation
+y(i)
+y(i)
+1.1.2 Unsupervised learning
+1.1.2.1 Clustering
+x(1),…,x(n)∈Rdlevel view of (part of) the breadth
+of the ﬁeld.
+Many textbooks use  and 
+instead of  and . We ﬁnd that
+notation somewhat difﬁcult to
+manage when  is itself a vector
+and we need to talk about its
+elements. The notation we are
+using is standard in some other
+parts of the ML literature.xi ti
+x(i)y(i)
+x(i) Given samples  drawn i.i.d. from some distribution , the
+goal is to predict the probability  of an element drawn from the same
+distribution. Density estimation sometimes plays a role as a “subroutine” in the
+overall learning method for supervised learning, as well.
+Given samples , the problem is to re-represent them as points in
+a -dimensional space, where . The goal is typically to retain information in
+the data set that will, e.g., allow elements of one class to be distinguished from
+another.
+Dimensionality reduction is a standard technique that is particularly useful for
+visualizing or understanding high-dimensional data. If the goal is ultimately to
+perform regression or classiﬁcation on the data after the dimensionality is reduced,
+it is usually best to articulate an objective for the overall prediction problem rather
+than to ﬁrst do dimensionality reduction without knowing which dimensions will
+be important for the prediction task.
+In sequence learning, the goal is to learn a mapping from input sequences 
+to output sequences . The mapping is typically represented as a state
+machine, with one function  used to compute the next hidden internal state given
+the input, and another function  used to compute the output given the current
+hidden state.
+It is supervised in the sense that we are told what output sequence to generate for
+which input sequence, but the internal functions have to be learned by some
+method other than direct supervision, because we don’t know what the hidden
+state sequence is.
+In reinforcement learning, the goal is to learn a mapping from input values
+(typically assumed to be states of an agent or system; for now, think e.g. the velocity
+of a moving car) to output values (typically we want control actions; for now, think
+e.g. if to accelerate or hit the brake). However, we need to learn the mapping
+without a direct supervision signal to specify which output values are best for a
+particular input; instead, the learning problem is framed as an agent interacting
+with an environment, in the following setting:
+The agent observes the current state .
+It selects an action 
+1.1.2.2 Density estimationx(1),…,x(n)∈RdPr(X)
+Pr(x(n+1))
+1.1.2.3 Dimensionality reduction
+x(1),…,x(n)∈RD
+d d<D
+1.1.3 Sequence learning
+x0,…,xn
+y1,…,ym
+fs
+fo
+1.1.4 Reinforcement learning
+st
+at. It receives a reward, , which typically depends on  and possibly .
+The environment transitions probabilistically to a new state, , with a
+distribution that depends only on  and .
+The agent observes the current state, .
+The goal is to ﬁnd a policy , mapping  to , (that is, states to actions) such that
+some long-term sum or average of rewards  is maximized.
+This setting is very different from either supervised learning or unsupervised
+learning, because the agent’s action choices affect both its reward and its ability to
+observe the environment. It requires careful consideration of the long-term effects of
+actions, as well as all of the other issues that pertain to supervised learning.
+There are many other problem settings. Here are a few.
+In semi-supervised learning, we have a supervised-learning training set, but there
+may be an additional set of  values with no known . These values can still be
+used to improve learning performance (if they are drawn from  that is the
+marginal of  that governs the rest of the data set).
+In active learning, it is assumed to be expensive to acquire a label  (imagine
+asking a human to read an x-ray image), so the learning algorithm can sequentially
+ask for particular inputs  to be labeled, and must carefully select queries in order
+to learn as effectively as possible while minimizing the cost of labeling.
+In transfer learning (also called meta-learning), there are multiple tasks, with data
+drawn from different, but related, distributions. The goal is for experience with
+previous tasks to apply to learning a current task in a way that requires decreased
+experience with the new task.
+1.2 Assumptions
+The kinds of assumptions that we can make about the data source or the solution
+include:
+The data are independent and identically distributed (i.i.d.).
+The data are generated by a Markov chain (i.e. outputs only depend only on
+the current state, with no additional memory).
+The process generating the data might be adversarial.rt st at
+st+1
+stat
+st+1
+…
+π sa
+r
+1.1.5 Other settings
+x(i)y(i)
+Pr(X)
+Pr(X,Y)
+y(i)
+x(i) The “true” model that is generating the data can be perfectly described by one
+of some particular set of hypotheses.
+The effect of an assumption is often to reduce the “size” or “expressiveness” of the
+space of possible hypotheses and therefore reduce the amount of data required to
+reliably identify an appropriate hypothesis.
+1.3 Evaluation criteria
+Once we have speciﬁed a problem class, we need to say what makes an output or
+the answer to a query good, given the training data. We specify evaluation criteria
+at two levels: how an individual prediction is scored, and how the overall behavior
+of the prediction or estimation system is scored.
+The quality of predictions from a learned model is often expressed in terms of a loss
+function. A loss function  tells you how much you will be penalized for
+making a guess  when the answer is actually . There are many possible loss
+functions. Here are some frequently used examples:
+0-1 Loss applies to predictions drawn from ﬁnite domains.
+Squared loss
+Absolute loss
+Asymmetric loss Consider a situation in which you are trying to predict
+whether someone is having a heart attack. It might be much worse to predict
+“no” when the answer is really “yes”, than the other way around.
+Any given prediction rule will usually be evaluated based on multiple predictions
+and the loss of each one. At this level, we might be interested in:
+Minimizing expected loss over all the predictions (also known as risk)
+Minimizing maximum loss: the loss of the worst prediction
+Minimizing or bounding regret: how much worse this predictor performs than
+the best one drawn from some classL(g,a)
+g a
+L(g,a)={0if g=a
+1otherwise
+L(g,a)=(g−a)2
+L(g,a)=|g−a|
+L(g,a)=⎧
+⎪⎨
+⎪⎩1 if g=1 and a=0
+10if g=0 and a=1
+0 otherwise Characterizing asymptotic behavior: how well the predictor will perform in the
+limit of inﬁnite training data
+Finding algorithms that are probably approximately correct: they probably
+generate a hypothesis that is right most of the time.
+There is a theory of rational agency that argues that you should always select the
+action that minimizes the expected loss. This strategy will, for example, make you the
+most money in the long run, in a gambling setting. As mentioned above, expected
+loss is also sometimes called risk in ML literature, but that term means other things
+in economics or other parts of decision theory, so be careful...it’s risky to use it. We
+will, most of the time, concentrate on this criterion.
+1.4 Model type
+Recall that the goal of a ML system is typically to estimate or generalize, based on
+data provided. Below, we examine the role of model-making in machine learning.
+In some simple cases, in response to queries, we can generate predictions directly
+from the training data, without the construction of any intermediate model, or more
+precisely, without the learning of any parameters.
+For example, in regression or classiﬁcation, we might generate an answer to a new
+query by averaging answers to recent queries, as in the nearest neighbor method.
+This two-step process is more typical:
+1. “Fit” a model (with some a-prior chosen parameterization) to the training data
+2. Use the model directly to make predictions
+In the parametric models setting of regression or classiﬁcation, the model will be
+some hypothesis or prediction rule  for some functional form . The
+term hypothesis has its roots in statistical learning and the scientiﬁc method, where
+models or hypotheses about the world are tested against real data, and reﬁned with
+more evidence, observations, or insights. Note that the parameters themselves are
+only part of the assumptions that we’re making about the world. The model itself is
+a hypothesis that will be reﬁned with more evidence.
+The idea is that  is a set of one or more parameter values that will be determined
+by ﬁtting the model to the training data and then be held ﬁxed during testing.
+Given a new , we would then make the prediction .
+1.4.1 Non-parametric models
+1.4.2 Parametric modelsy=h(x;Θ) h
+Θ
+x(n+1)h(x(n+1);Θ) The ﬁtting process is often articulated as an optimization problem: Find a value of
+ that minimizes some criterion involving  and the data. An optimal strategy, if
+we knew the actual underlying distribution on our data,  would be to
+predict the value of  that minimizes the expected loss, which is also known as the
+test error. If we don’t have that actual underlying distribution, or even an estimate of
+it, we can take the approach of minimizing the training error: that is, ﬁnding the
+prediction rule  that minimizes the average loss on our training data set. So, we
+would seek  that minimizes
+where the loss function  measures how bad it would be to make a guess of 
+when the actual value is .
+We will ﬁnd that minimizing training error alone is often not a good choice: it is
+possible to emphasize ﬁtting the current data too strongly and end up with a
+hypothesis that does not generalize well when presented with new  values.
+1.5 Model class and parameter ﬁtting
+A model class  is a set of possible models, typically parameterized by a vector of
+parameters . What assumptions will we make about the form of the model? When
+solving a regression problem using a prediction-rule approach, we might try to ﬁnd
+a linear function  that ﬁts our data well. In this example, the
+parameter vector .
+For problem types such as classiﬁcation, there are huge numbers of model classes
+that have been considered...we’ll spend much of this course exploring these model
+classes, especially neural networks models. We will almost completely restrict our
+attention to model classes with a ﬁxed, ﬁnite number of parameters. Models that
+relax this assumption are called “non-parametric” models.
+How do we select a model class? In some cases, the ML practitioner will have a
+good idea of what an appropriate model class is, and will specify it directly. In other
+cases, we may consider several model classes and choose the best based on some
+objective function. In such situations, we are solving a model selection problem:
+model-selection is to pick a model class  from a (usually ﬁnite) set of possible
+model classes, whereas model ﬁtting is to pick a particular model in that class,
+speciﬁed by (usually continuous) parameters .
+1.6 Algorithm
+Once we have described a class of models and a way of scoring a model given data,
+we have an algorithmic problem: what sequence of computational instructions
+should we run in order to ﬁnd a good model from our class? For example,Θ Θ
+Pr(X,Y)
+y
+h
+Θ
+Etrain(h;Θ)=1
+nn
+∑
+i=1L(h(x(i);Θ),y(i)),
+L(g,a) g
+a
+x
+M
+Θ
+h(x;θ,θ0)=θTx+θ0
+Θ=(θ,θ0)
+M
+Θ determining the parameter vector which minimizes the training error might be
+done using a familiar least-squares minimization algorithm, when the model  is a
+function being ﬁt to some data .
+Sometimes we can use software that was designed, generically, to perform
+optimization. In many other cases, we use algorithms that are specialized for ML
+problems, or for particular hypotheses classes. Some algorithms are not easily seen
+as trying to optimize a particular criterion. In fact, a historically important method
+for ﬁnding linear classiﬁers, the perceptron algorithm, has this character.h
+x Th is page contains all content from the legacy PDF  notes; gradient descent chapter.
+As we phase out the PDF , this page may receive up dates not reﬂe cted in the static PDF .
+In the previous chapter, we showed how to describe an interesting objective
+function for machine learning, but we need a way to ﬁnd the optimal
+, particularly when the objective function is not amenable to
+analytical optimization. For example, this can be the case when  involves a
+more complex loss function, or more general forms of regularization. It can also be
+the case when there are simply too many parameters to learn for it to be
+computationally feasible.
+There is an enormous and fascinating literature on the mathematical and
+algorithmic foundations of optimization, but for this class, we will consider one of
+the simplest methods, called gradient descent.
+Intuitively, in one or two dimensions, we can easily think of  as deﬁning a
+surface over ; that same idea extends to higher dimensions. Now, our objective is
+to ﬁnd the  value at the lowest point on that surface. One way to think about
+gradient descent is that you start at some arbitrary point on the surface, look to see
+in which direction the “hill” goes down most steeply, take a small step in that
+direction, determine the direction of steepest descent from where you are, take
+another small step, etc.
+Below, we explicitly give gradient descent algorithms for one and multidimensional
+objective functions (Section 3.1 and Section 3.2). We then illustrate the application of
+gradient descent to a loss function which is not merely mean squared loss
+(Section 3.3). And we present an important method known as stochastic gradient
+descent (Section 3.4), which is especially useful when datasets are too large for
+descent in a single batch, and has some important behaviors of its own.
+3.1 Gradient descent in one dimension
+We start by considering gradient descent in one dimension. Assume , and
+that we know both  and its ﬁrst derivative with respect to , . Here is
+pseudo-code for gradient descent on an arbitrary function . Along with  and its
+gradient  (which, in the case of a scalar , is the same as its derivative ), we
+have to specify some hyper-parameters. These hyper-parameters include the initial
+value for parameter , a step-size hyper-parameter , and an accuracy hyper-
+parameter .3  Gradient Descent
+Note
+Θ∗=argminΘJ(Θ)
+J(Θ)
+J(Θ)
+Θ
+Θ
+Θ∈R
+J(Θ) ΘJ′(Θ)
+f f
+∇Θf Θ f′
+Θ η
+ϵYou might want to consider
+studying optimization some day!
+It’s one of the fundamental tools
+enabling machine learning, and it’s
+a beautiful and deep ﬁeld. 3  Gradient Descent  The hyper-parameter  is often called learning rate when gradient descent is applied
+in machine learning. For simplicity,  may be taken as a constant, as is the case in
+the pseudo-code below; and we’ll see adaptive (non-constant) step-sizes soon.
+What’s important to notice though, is that even when  is constant, the actual
+magnitude of the change to  may not be constant, as that change depends on the
+magnitude of the gradient itself too.
+procedure 1D-G RADIENT -D ESCENT( )
+repeat
+until 
+return 
+end procedure
+Note that this algorithm terminates when the derivative of the function  is
+sufﬁciently small. There are many other reasonable ways to decide to terminate,
+including:
+Stop after a ﬁxed number of iterations , i.e., when . Practically, this is the
+most common choice.
+Stop when the change in the value of the parameter  is sufﬁciently small,
+i.e., when .
+❓ Study Question
+Consider all of the potential stopping criteria for 1D-Gradient-Descent, both
+in the algorithm as it appears and listed separately later. Can you think of ways
+that any two of the criteria relate to each other?
+Theorem 3.1 Choose any small distance . If we assume that  has a minimum, is
+sufﬁciently “smooth” and convex, and if the learning rate  is sufﬁciently small, gradient
+descent will reach a point within  of a global optimum point .
+However, we must be careful when choosing the learning rate to prevent slow
+convergence, non-converging oscillation around the minimum, or divergence.
+The following plot illustrates a convex function , starting gradient
+descent at  with a step-size of . It is very well-behaved!η
+η
+η
+Θ
+1: Θinit,η,f,f′,ϵ
+2:Θ(0)←Θinit
+3:t←0
+4:
+5:t←t+1
+6: Θ(t)=Θ(t−1)−ηf′(Θ(t−1))
+7: |f′(Θ(t))|<ϵ
+8: Θ(t)
+9:
+f
+T t=T
+Θ
+Θ(t)−Θ(t−1)<ϵ
+∣∣~ϵ>0 f
+η
+~ϵ Θ
+f(x)=(x−2)2
+xinit=4.0 1/2 − 1 1 2 3 4 5 624
+xf (x )
+If  is non-convex, where gradient descent converges to depends on . First, let’s
+establish some deﬁnitions. Let  be a real-valued function deﬁned over some
+domain . A point  is called a global minimum point of  if  for
+all other . A point  is instead called a local minimum point of a function
+ if there exists some constant  such that for all  within the interval deﬁned
+by  , where  is some distance metric, e.g.,
+ A global minimum point is also a local minimum point, but a
+local minimum point does not have to be a global minimum point.
+❓ Study Question
+What happens in this example with very small ? With very big ?
+If  is non-convex (and sufﬁciently smooth), one expects that gradient descent (run
+long enough with small enough learning rate) will get very close to a point at which
+the gradient is zero, though we cannot guarantee that it will converge to a global
+minimum point.
+There are two notable exceptions to this common sense expectation: First, gradient
+descent can get stagnated while approaching a point  which is not a local
+minimum or maximum, but satisﬁes . For example, for , starting
+gradient descent from the initial guess , while using learning rate 
+will lead to  converging to zero as . Second, there are functions (even
+convex ones) with no minimum points, like , for which gradient
+descent with a positive learning rate converges to .
+The plot below shows two different , and how gradient descent started from
+each point heads toward two different local optimum points.f xinit
+f
+D x0∈D ff(x0)≤f(x)
+x∈D x0∈D
+f ϵ>0 x
+d(x,x0)<ϵ,f(x0)≤f(x)d
+d(x,x0)=||x−x0||.
+η η
+f
+x
+f′(x)=0 f(x)=x3
+xinit=1 η<1/3
+x(k)k→∞
+f(x)=exp(−x)
++∞
+xinit − 2 − 1 1 2 3 44681 0
+xf (x )
+3.2 Multiple dimensions
+The extension to the case of multi-dimensional  is straightforward. Let’s assume
+, so .
+The gradient of  with respect to  is
+The algorithm remains the same, except that the update step in line 5 becomes
+and any termination criteria that depended on the dimensionality of  would have
+to change. The easiest thing is to keep the test in line 6 as ,
+which is sensible no matter the dimensionality of .
+❓ Study Question
+Which termination criteria from the 1D case were deﬁned in a way that assumes
+ is one dimensional?
+3.3 Application to regressionΘ
+Θ∈Rmf:Rm→R
+f Θ
+∇Θf=⎡
+⎢⎣∂f/∂Θ1
+⋮
+∂f/∂Θm⎤
+⎥⎦
+Θ(t)=Θ(t−1)−η∇Θf(Θ(t−1))
+Θ
+f(Θ(t))−f(Θ(t−1))<ϵ
+∣∣Θ
+Θ Recall from the previous chapter that choosing a loss function is the ﬁrst step in
+formulating a machine-learning problem as an optimization problem, and for
+regression we studied the mean square loss, which captures losws as
+. This leads to the ordinary least squares objective
+We use the gradient of the objective with respect to the parameters,
+to obtain an analytical solution to the linear regression problem. Gradient descent
+could also be applied to numerically compute a solution, using the update rule
+Now, let’s add in the regularization term, to get the ridge-regression objective:
+ 
+Recall that in ordinary least squares, we ﬁnessed handling  by adding an extra
+dimension of all 1’s. In ridge regression, we really do need to separate the
+parameter vector  from the offset , and so, from the perspective of our general-
+purpose gradient descent method, our whole parameter set  is deﬁned to be
+. We will go ahead and ﬁnd the gradients separately for each one:
+Note that  will be of shape  and  will be a scalar since we
+have separated  from  here.
+❓ Study Question(guess−actual)2
+J(θ)=1
+nn
+∑
+i=1(θTx(i)−y(i))2
+.
+∇θJ=2
+nXT
+d×n(Xθ−Y)
+n×1,        (3.1)
+θ(t)=θ(t−1)−η2
+nn
+∑
+i=1([θ(t−1)]T
+x(i)−y(i))x(i).
+3.3.1 Ridge regression
+Jridge(θ,θ0)=1
+nn
+∑
+i=1(θTx(i)+θ0−y(i))2
++λ∥θ∥2.
+θ0
+θ θ0
+Θ
+Θ=(θ,θ0)
+∇θJridge(θ,θ0)=2
+nn
+∑
+i=1(θTx(i)+θ0−y(i))x(i)+2λθ
+∂Jridge(θ,θ0)
+∂θ0=2
+nn
+∑
+i=1(θTx(i)+θ0−y(i)).
+∇θJridge d×1 ∂Jridge/∂θ0
+θ0θ Convince yourself that the dimensions of all these quantities are correct, under
+the assumption that  is . How does  relate to  as discussed for  in the
+previous section?
+❓ Study Question
+Compute  by ﬁnding the vector of partial derivatives
+. What is the shape of ?
+❓ Study Question
+Compute  by ﬁnding the vector of partial derivatives
+.
+❓ Study Question
+Use these last two results to verify our derivation above.
+Putting everything together, our gradient descent algorithm for ridge regression
+becomes
+procedure RR-G RADIENT -D ESCENT( )
+repeat
+until 
+return 
+end procedure
+❓ Study Question
+Is it okay that  doesn’t appear in line 8?
+❓ Study Question
+Is it okay that the 2’s from the gradient deﬁnitions don’t appear in the
+algorithm?θd×1 d m Θ
+∇θ||θ||2
+(∂||θ||2/∂θ1,…,∂||θ||2/∂θd) ∇θ||θ||2
+∇θJridge(θTx+θ0,y)
+(∂Jridge(θTx+θ0,y)/∂θ1,…,∂Jridge(θTx+θ0,y)/∂θd)
+1: θinit,θ0init,η,ϵ
+2:θ(0)←θinit
+3:θ(0)
+0←θ0init
+4:t←0
+5:
+6:t←t+1
+7:θ(t)=θ(t−1)−η(1
+n∑n
+i=1(θ(t−1)Tx(i)+θ0(t−1)−y(i))x(i)+λθ(t−1))
+8:θ(t)
+0=θ(t−1)
+0−η(1
+n∑n
+i=1(θ(t−1)Tx(i)+θ0(t−1)−y(i)))
+9: Jridge(θ(t),θ(t)
+0)−Jridge(θ(t−1),θ(t−1)
+0)<ϵ
+∣∣10: θ(t),θ(t)
+0
+11:
+λBeware double superscripts!  is
+the transpose of the vector .[θ]T
+θ 3.4 Stochastic gradient descent
+When the form of the gradient is a sum, rather than take one big(ish) step in the
+direction of the gradient, we can, instead, randomly select one term of the sum, and
+take a very small step in that direction. This seems sort of crazy, but remember that
+all the little steps would average out to the same direction as the big step if you
+were to stay in one place. Of course, you’re not staying in that place, so you move,
+in expectation, in the direction of the gradient.
+Most objective functions in machine learning can end up being written as an
+average over data points, in which case, stochastic gradient descent (sgd) is
+implemented by picking a data point randomly out of the data set, computing the
+gradient as if there were only that one point in the data set, and taking a small step
+in the negative direction.
+Let’s assume our objective has the form
+where  is the number of data points used in the objective (and this may be
+different from the number of points available in the whole data set).
+Here is pseudocode for applying sgd to such an objective ; it assumes we know the
+form of  for all  in :
+procedure STOCHAS TIC -G RADIENT -D ESCENT( )
+for  do
+randomly select 
+end for
+end procedure
+Note that now instead of a ﬁxed value of ,  is indexed by the iteration of the
+algorithm, . Choosing a good stopping criterion can be a little trickier for sgd than
+traditional gradient descent. Here we’ve just chosen to stop after a ﬁxed number of
+iterations .
+For sgd to converge to a local optimum point as  increases, the learning rate has to
+decrease as a function of time. The next result shows one learning rate sequence that
+works.
+Theorem 3.2 If  is convex, and  is a sequence satisfyingf(Θ)=1
+nn
+∑
+i=1fi(Θ),
+n
+f
+∇Θfii1…n
+1: Θinit,η,f,∇Θf1,...,∇Θfn,T
+2:Θ(0)←Θinit
+3:t←1
+4: i∈{1,2,…,n}
+5: Θ(t)=Θ(t−1)−η(t)∇Θfi(Θ(t−1))
+6:
+7:
+ηη
+t
+T
+t
+f η(t)
+∞
+∑
+t=1η(t)=∞and∞
+∑
+t=1η(t)2<∞,Sometimes you will see that the
+objective being written as a sum,
+instead of an average. In the “sum”
+convention, the  normalizing
+constant is getting “absorbed” into
+individual .1
+n
+fi
+f(Θ)=n
+∑
+i=1fi(Θ). then SGD converges with probability one* to the optimal .*
+Why these two conditions? The intuition is that the ﬁrst condition, on , is
+needed to allow for the possibility of an unbounded potential range of exploration,
+while the second condition, on , ensures that the learning rates get smaller
+and smaller as  increases.
+One “legal” way of setting the learning rate is to make  but people often
+use rules that decrease more slowly, and so don’t strictly satisfy the criteria for
+convergence.
+❓ Study Question
+If you start a long way from the optimum, would making  decrease more
+slowly tend to make you move more quickly or more slowly to the optimum?
+There are multiple intuitions for why sgd might be a better choice algorithmically
+than regular gd (which is sometimes called batch gd (bgd)):
+bgd typically requires computing some quantity over every data point in a data
+set. sgd may perform well after visiting only some of the data. This behavior
+can be useful for very large data sets – in runtime and memory savings.
+If your  is actually non-convex, but has many shallow local optimum points
+that might trap bgd, then taking samples from the gradient at some point 
+might “bounce” you around the landscape and away from the local optimum
+points.
+Sometimes, optimizing  really well is not what we want to do, because it
+might overﬁt the training set; so, in fact, although sgd might not get lower
+training error than bgd, it might result in lower test error.Θ
+∑η(t)
+∑η(t)2
+t
+η(t)=1/t
+η(t)
+f
+Θ
+f We had legacy PDF  notes that us ed mixed conventions for data matrices: “each row as a
+data point” and “each colum n as a data point”.
+We are standardizing to “each row as a data point.” Th us ,  aligns with  in the PDF
+notes if you’ve read those. If you spot inconsistencies or experience any confus ion, please
+raise an issue . Th anks!
+Regression is an important machine-learning problem that provides a good starting
+point for diving deeply into the ﬁeld.
+2.1 Problem formulation
+A hypothesis  is employed as a model for solving the regression problem, in that it
+maps inputs  to outputs ,
+where  (i.e., a length  column vector of real numbers), and  (i.e., a real
+number). Real life rarely gives us vectors of real numbers; the  we really want to
+take as input is usually something like a song, image, or person. In that case, we’ll
+have to deﬁne a function , whose range is , where  represents features of ,
+like a person’s height or the amount of bass in a song, and then let the 
+. In much of the following, we’ll omit explicit mention of  and assume that the 
+are in , but you should always have in mind that some additional process was
+almost surely required to go from the actual input examples to their feature
+representation, and we’ll talk a lot more about features later in the course.
+Regression is a supervised learning problem, in which we are given a training dataset
+of the form
+which gives examples of input values  and the output values  that should be
+associated with them. Because  values are real-valued, our hypotheses will have
+the form
+This is a good framework when we want to predict a numerical quantity, like
+height, stock value, etc., rather than to divide the inputs into discrete categories.2  Regre ssion
+Warning
+X~X
+h
+x y
+x→ →y,h
+x∈Rdd y∈R
+x
+φ(x) Rdφ x
+h:φ(x)→R
+φ x(i)
+Rd
+Dtrain={(x(1),y(1)),…,(x(n),y(n))},
+x(i)y(i)
+y
+h:Rd→R.“Regression,” in common parlance,
+means moving backwards. But this
+is forward progress!
+Real life rarely gives us  vectors of
+real num bers. Th e  we really want
+to take as input is us ua lly
+something like a song, image, or
+person. In that case, we’ll have to
+deﬁne a fun ction  whose
+range is , where  represents
+features of  (e.g., a person’s height
+or the amoun t of bass in a song).x
+φ(x)
+Rdφ
+x 2  Regression 
+1 What makes a hypothesis useful? That it works well on new data—that is, it makes
+good predictions on examples it hasn’t seen.
+However, we don’t know exactly what data this hypothesis might be tested on in
+the real world. So, we must assume a connection between the training data and
+testing data. Typically, the assumption is that they are drawn independently from
+the same probability distribution.
+To make this discussion more concrete, we need a loss function to express how
+unhappy we are when we guess an output  given an input  for which the desired
+output was .
+Given a training set  and a hypothesis  with parameters , the training error
+of  can be deﬁned as the average loss on the training data:
+The training error of  gives us some idea of how well it characterizes the
+relationship between  and  values in our data, but it isn’t the quantity we most
+care about. What we most care about is test error:
+on  new examples that were not used in the process of ﬁnding the hypothesis.
+It might be worthwhile to stare at the two errors and think about what’s the difference.
+For example, notice how  is no longer a variable in the testing error? Th is is becaus e, in
+evalua ting the testing error, the parameters will have been “picked” or “ﬁxed” already.
+For now, we will try to ﬁnd a hypothesis with small training error (later, with some
+added criteria) and try to make some design choices so that it generalizes well to new
+data, meaning that it also has a small test error.
+2.2 Regression as an optimization problem
+Given data, a loss function, and a hypothesis class, we need a method for ﬁnding a
+good hypothesis in the class. One of the most general ways to approach this
+problem is by framing the machine learning problem as an optimization problem.
+One reason for taking this approach is that there is a rich area of math and
+algorithms studying and developing efﬁcient methods for solving optimizationg x
+a
+Dtrain h Θ
+h
+Etrain(h;Θ)=1
+nn
+∑
+i=1L(h(x(i);Θ),y(i)). (2.1)
+h
+xy
+Etest(h)=1
+n′n+n′
+∑
+i=n+1L(h(x(i)),y(i)),
+n′
+Note
+ΘTh is process of converting our  data
+into a num erical form is often
+referred to as data pre-processing.
+Th en  maps  to .
+In muc h of the following, we’ll
+omit explicit mention of  and
+assum e that the  are in .
+However, you should always
+remember that some additional
+process was almost sur ely required
+to go from the actua l input
+examples to their featur e
+representation. We will discus s
+featur es more later in the cour se.hφ(x)R
+φ
+x(i)Rd
+M y favorite analogy is to problem
+sets. We evalua te a stud ent’s ability
+to generalize by putting que stions
+on the exam that were not on the
+homework (training set). problems, and lots of very good software implementations of these methods. So, if
+we can turn our problem into one of these problems, then there will be a lot of work
+already done for us!
+We begin by writing down an objective function , where  stands for all the
+parameters in our model (i.e., all possible choices over parameters). We often write
+ to make clear the dependence on the data .
+The objective function describes how we feel about possible hypotheses . We
+generally look for parameter values  that minimize the objective function:
+In the most general case, there is not a guarantee that there exists a unique set of
+parameters which minimize the objective function. However, we will ignore that for
+now. A very common form for a machine-learning objective is:
+The loss measures how unhappy we are about the prediction  for the pair
+. Minimizing this loss improves prediction accuracy. The regularizer 
+is an additional term that encourages the prediction to remain general, and the
+constant  adjusts the balance between ﬁtting the training examples and
+generalizing to unseen examples. We will discuss this balance and the idea of
+regularization further in Section 2.7.
+2.3 Linear regression
+To make this discussion more concrete, we need to provide a hypothesis class and a
+loss function.
+We begin by picking a class of hypotheses  that might provide a good set of
+possible models for the relationship between  and  in our data. We start with a
+very simple class of linear hypotheses for regression:
+where the model parameters are . In one dimension ( ), this
+corresponds to the familiar slope-intercept form  of a line. In two
+dimesions ( ), this corresponds to a plane. In higher dimensions, this model
+describes a hyperplane. This hypothesis class is both simple to study and very
+powerful, and will serve as the basis for many other important techniques (even
+neural networks!).J(Θ) Θ
+J(Θ;D) D
+Θ
+Θ
+Θ∗=argmin
+ΘJ(Θ).
+J(Θ)=1
+nn
+∑
+i=1L(h(x(i);Θ),y(i))
+loss+ λ
+non-negativeconstantR(Θ).⎛
+⎜⎝    ⎞
+⎟⎠    (2.2)
+h(x(i);Θ)
+(x(i),y(i)) R(Θ)
+λ
+H
+xy
+y=h(x;θ,θ0)=θTx+θ0, (2.3)
+Θ=(θ,θ0) d=1
+y=mx+b
+d=2Do n’t be too pertur bed by the
+semicolon where you expected to
+see a comma! It’s a mathematical
+way of saying that we are mostly
+interested in this as a fun ction of
+the argum ents before the ;, but we
+should remember there’s a
+dependence on the stuff after it as
+well. For now, our objective in linear regression is to ﬁnd a hypothesis that goes as close
+as possible, on average, to all of our training data. We deﬁne a loss function to
+describe how to evaluate the quality of the predictions our hypothesis is making,
+when compared to the “target”  values in the data set. The choice of loss function
+is part of modeling your domain. In the absence of additional information about a
+regression problem, we typically use squared loss:
+where  is our “guess” from the hypothesis, or the hypothesis’ prediction,
+and  is the “actual” observation (in other words, here  is being used equivalently
+as ). With this choice of squared loss, the average loss as generally deﬁned in
+Equation 2.1 will become the so-called mean squared error (MSE).
+Applying the general optimization framework to the linear regression hypothesis
+class of Equation 2.3 with squared loss and no regularization, our objective is to ﬁnd
+values for  that minimize the MSE:
+resulting in the solution:
+For one-dimensional data ( ), this corresponds to ﬁtting a line to data. For
+, this hypothesis represents a -dimensional hyperplane embedded in a
+-dimensional space (the input dimension plus the  dimension).
+For example, in the left plot below, we can see data points with labels  and input
+dimensions  and . In the right plot below, we see the result of ﬁtting these
+points with a two-dimensional plane that resides in three dimensions. We interpret
+the plane as representing a function that provides a  value for any input .
+y
+L(g,a)=(g−a)2.
+g=h(x)
+a a
+y
+Θ=(θ,θ0)
+J(θ,θ0)=1
+nn
+∑
+i=1(θTx(i)+θ0−y(i))2
+, (2.4)
+θ∗,θ∗
+0=argmin
+θ,θ0J(θ,θ0). (2.5)
+d=1
+d>1 d
+(d+1) y
+y
+x1x2
+y (x1,x2)Th e squa red loss penalizes gue sses
+that are too high the same amoun t
+as it penalizes gue sses that are too
+low, and has a good mathematical
+jus tiﬁcation in the case that your
+data are generated from an
+un derlying linear hypothesis with
+the so-called Gaus sian-
+distributed noise added to the 
+value s. But there are applications
+in which other losses would be
+better, and muc h of the framework
+we discus s can be applied to
+different loss fun ctions, althoug h
+this one has a form that also makes
+it particularly computationally
+convenient.
+We won’t get into the details of
+Gaus sian distribution in our  class;
+but it’s one of the most important
+distributions and well-worth
+stud ying closely at some point.
+On e obvious  fact about Gaus sian is
+that it’s symmetric; this is in fact
+one of the reasons squa red lossy A richer class of hypotheses can be obtained by performing a non-linear feature
+transformation before doing the regression, as we will later see, but it will still end
+up that we have to solve a linear regression problem.
+2.4 A gloriously simple linear regression
+algorithm
+Okay! Given the objective in Equation 2.4, how can we ﬁnd good values of  and 
+? We’ll study several general-purpose, efﬁcient, interesting algorithms. But before
+we do that, let’s start with the simplest one we can think of: guess a whole bunch ()
+of different values of  and , see which one has the smallest error on the training set,
+and return it.
+Algorithm 2.1 Random-Regression
+Require: Data , integer 
+for  to  do
+Randomly generate hypothesis 
+end for
+Let 
+return 
+This seems kind of silly, but it’s a learning algorithm, and it’s not completely
+useless.
+❓ Study Question
+If your data set has  data points, and the dimension of the  values is , what is
+the size of an individual ?
+❓ Study Question
+How do you think increasing the number of guesses  will change the training
+error of the resulting hypothesis?
+2.5 Analytical solution: ordinary least squares
+One very interesting aspect of the problem of ﬁnding a linear hypothesis that
+minimizes mean squared error is that we can ﬁnd a closed-form formula for the
+answer! This general problem is often called the ordinary least squares (ols).
+Everything is easier to deal with if we ﬁrst ignore the offset . So, suppose for now,
+we have, simply,θθ0
+k
+θθ0
+D k
+1:i=1k
+2: θi,θ0(i)
+3:
+4:i=argminjJ(θ(j),θ0(j);D)
+5: θ(i),θ0(i)
+n x d
+θ(i)
+k
+θ0
+y=θTx. (2.6)works well un der Gaus sian
+settings, as the loss is also
+symmetric.
+this corresponds to a hyperplane
+that goes throug h the origin. In this case, the objective becomes
+We approach this just like a minimization problem from calculus homework: take
+the derivative of  with respect to , set it to zero, and solve for . There are
+additional steps required, to check that the resulting  is a minimum (rather than a
+maximum or an inﬂection point) but we won’t work through that here. It is possible
+to approach this problem by:
+Finding  for  in ,
+Constructing a set of  equations of the form , and
+Solving the system for values of .
+That works just ﬁne. To get practice for applying techniques like this to more
+complex problems, we will work through a more compact (and cool!) matrix view.
+Along the way, it will be helpful to collect all of the derivatives in one vector. In
+particular, the gradient of  with respect to  is following column vector of length :
+❓ Study Question
+Work through the next steps and check your answer against ours below.
+We can think of our training data in terms of matrices  and , where each row of
+ is an example, and each row (or rather, element) of  is the corresponding target
+output value:
+❓ Study Question
+What are the dimensions of  and ?J(θ)=1
+nn
+∑
+i=1(θTx(i)−y(i))2
+. (2.7)
+J θ θ
+θ
+∂J/∂θkk1,…,d
+k ∂J/∂θk=0
+θk
+J θ d
+∇θJ= .⎡
+⎢⎣∂J/∂θ1
+⋮
+∂J/∂θd⎤
+⎥⎦
+XY
+X Y
+X= Y= .⎡
+⎢⎣x(1)
+1…x(1)
+d
+⋮ ⋱ ⋮
+x(n)
+1 …x(n)
+d⎤
+⎥⎦⎡
+⎢⎣y(1)
+⋮
+y(n)⎤
+⎥⎦
+XY Now we can write
+and using facts about matrix/vector calculus, we get
+Setting this equal to zero and solving for  yields the ﬁnal closed-form solution:
+and the dimensions work out! So, given our data, we can directly compute the
+linear regression that minimizes mean squared error. That’s pretty awesome!
+Now, how do we deal with the offset? We augment the original feature vector with
+a “fake” feature of value 1, and add a corresponding parameter  to the  vector.
+That is, we deﬁne columns vectors  such that,
+where the “aug” denotes that  have been augmented.
+Then we can now write the linear hypothesis as if there is no offset,
+We can do this “appending a fake feature of 1” to all data points to form the
+augmented data matrix 
+where  as an -by vector of all one. Then use the formula in Equation 2.8 to ﬁnd
+the  that minimizes the mean squared error.J(θ)=1
+nn
+∑
+i=1(θTx(i)−y(i))2=1
+n(Xθ−Y)T(Xθ−Y).
+∇θJ(θ)=1
+n∇θ[(Xθ)TXθ−YTXθ−(Xθ)TY+YTY]
+=2
+n(XTXθ−XTY).
+θ
+θ∗=(XTX)−1XTY (2.8)
+θ0θ
+xaug,θaug∈Rd+1
+xaug= ,θaug=⎡
+⎢⎣x1
+x2
+⋮
+xd
+1⎤
+⎥⎦⎡
+⎢⎣θ1
+θ2
+⋮
+θd
+θ0⎤
+⎥⎦
+θ,x
+y=h(xaug;θaug)=θT
+augxaug (2.9)
+Xaug
+Xaug= =[ ]⎡
+⎢⎣x(1)
+1…x(1)
+d1
+⋮ ⋱ ⋮ ⋮
+x(n)
+1 …x(n)
+d1⎤
+⎥⎦X 𝟙
+𝟙n 1
+θaugSe e Appendix A if you need some
+help ﬁnding this gradient.
+Here are two related alternate
+angles to view this formula, for
+intuition’s sake:
+1. Note that
+ is the
+pseudo-inverse of . Th us , 
+“pseud o-solves” 
+(multiply both sides of this on
+the left by ).
+2. Note that
+is the projection matrix onto
+the colum n space of . Th us ,
+ solves .(XTX)−1XT=X+:
+Xθ∗
+Xθ=Y
+X+
+X(XTX)−1XT=projcol(X)
+X
+θ∗Xθ=projcol(X)Y Th is is a very special case where
+we can ﬁnd the solution in closed
+form. In general, we will need to
+us e iterative optimization
+algorithms to ﬁnd the best
+parameters. Also, this process of
+setting the graident/derivatives to
+zero and solving for the
+parameters works out in this
+problem. But there can be
+exceptions to this rule, and we will
+discus s them later in the cour se.But of cour se, the constant offset is
+not really gone, it’s jus t hidden in
+the aug mentation. ❓ Study Question
+Stop and prove to yourself that adding that extra feature with value 1 to every
+input vector and getting rid of the  parameter, as done in Equation 2.9 is
+equivalent to our original model Equation 2.3.
+2.6 Centering
+In fact, augmenting a “fake” feature of 1, as described above, is also useful for an
+important idea: namely, why utilizing the so-called centering eliminates the need
+for ﬁtting an intercept, and thereby offers an alternative way to avoid dealing with
+ directly.
+By centering, we mean subtracting the average (mean) of each feature from all data
+points, and we apply the same operation to the labels. For an example of a dataset
+before and after centering, see here
+The idea is that, with centered dataset, even if we were to search for an offset term
+, it would naturally fall out to be 0. Intuitively, this makes sense – if a dataset is
+centered around the origin, it seems natural that the best ﬁtting plane would go
+through the origin.
+Let’s see how this works out mathematically. First, for a centered dataset, two claims
+immediately follow (recall that  is an -by-1 vector of all ones):
+1. Each column of  sums up to zero, that is, .
+2. Similarly, the mean of the labels is 0, so .
+Recall that our ultimate goal is to ﬁnd an optimal ﬁtting hyperplane, parameterized
+by  and . In other words, we aim to ﬁnd  which at this point, involves
+simply plugging  into Equation 2.8.θ0
+θ0
+θ0
+𝟙n
+X XT𝟙=0
+YT𝟙=𝟙TY=0
+θθ0 θaug,
+Xaug=[ ]X 𝟙
+1 Indeed, the optimal  naturally falls out to be 0.
+2.7 Regularization
+The objective function of Equation 2.2 balances (training-data) memorization,
+induced by the loss term, with generalization, induced by the regularization term.
+Here, we address the need for regularization speciﬁcally for linear regression, and
+show how this can be realized using one popular regularization technique called
+ridge regression.
+If all we cared about was ﬁnding a hypothesis with small loss on the training data,
+we would have no need for regularization, and could simply omit the second term
+in the objective. But remember that our ultimate goal is to perform well on input
+values that we haven’t trained on! It may seem that this is an impossible task, but
+humans and machine-learning methods do this successfully all the time. What
+allows generalization to new input values is a belief that there is an underlying
+regularity that governs both the training and testing data. One way to describe an
+assumption about such a regularity is by choosing a limited class of possible
+hypotheses. Another way to do this is to provide smoother guidance, saying that,
+within a hypothesis class, we prefer some hypotheses to others. The regularizer
+articulates this preference and the constant  says how much we are willing to trade
+off loss on the training data versus preference over hypotheses.
+For example, consider what happens when  and  is highly correlated with
+, meaning that the data look like a line, as shown in the left panel of the ﬁgure
+below. Thus, there isn’t a unique best hyperplane. Such correlations happen often in
+real-life data, because of underlying common causes; for example, across a
+population, the height of people may depend on both age and amount of foodθ∗
+aug=([][ ])−1
+[]Y
+=[ ]−1
+[]Y
+=[ ]−1
+[]Y
+=[ ]−1
+[]Y
+=[ ]
+=[ ]
+=[]XT
+𝟙TX 𝟙XT
+𝟙T
+XTXXT𝟙
+𝟙TX 𝟙T𝟙XT
+𝟙T
+XTXXT𝟙
+𝟙TX 𝟙T𝟙XT
+𝟙T
+XTX0
+0nXT
+𝟙T
+(XTX)−1XTY
+n𝟙TY
+(XTX)−1XTY
+0
+θ∗
+θ∗
+0
+θ0
+2.7.1 Regularization and linear regression
+λ
+d=2,x2
+x1 intake in the same way. This is especially the case when there are many feature
+dimensions used in the regression. Mathematically, this leads to  close to
+singularity, such that  is undeﬁned or has huge values, resulting in
+unstable models (see the middle panel of ﬁgure and note the range of the  values—
+the slope is huge!):
+A common strategy for specifying a regularizer is to use the form
+when we have some idea in advance that  ought to be near some value .
+Here, the notion of distance is quantiﬁed by squaring the  norm of the parameter
+vector: for any -dimensional vector  the  norm of  is deﬁned as,
+In the absence of such knowledge a default is to regularize toward zero:
+When this is done in the example depicted above, the regression model becomes
+stable, producing the result shown in the right-hand panel in the ﬁgure. Now the
+slope is much more sensible.
+There are some kinds of trouble we can get into in regression problems. What if
+ is not invertible?
+Another kind of problem is overﬁtting: we have formulated an objective that is just
+about ﬁtting the data as well as possible, but we might also want to regularize to
+keep the hypothesis from getting too attached to the data.
+We address both the problem of not being able to invert  and the problem
+of overﬁtting using a mechanism called ridge regression. We add a regularization
+term  to the OLS objective, with a non-negative scalar value  to control theXTX
+(XTX)−1
+y
+R(Θ)=∥Θ−Θprior∥2
+Θ Θprior
+l2
+d v∈Rd,l2 v
+∥v∥=d
+∑
+i=1|vi|2.
+⎷
+R(Θ)=∥Θ∥2.
+2.7.2 Ridge regression
+(XTX)
+(XTX)−1
+∥θ∥2λ tradeoff between the training error and the regularization term. Here is the ridge
+regression objective function:
+Larger  values (in magnitude) pressure  values to be near zero.
+Note that, when data isn’t centered, we don’t penalize ; intuitively,  is what
+“ﬂoats” the regression surface to the right level for the data you have, and so we
+shouldn’t make it harder to ﬁt a data set where the  values tend to be around one
+million than one where they tend to be around one. The other parameters control
+the orientation of the regression surface, and we prefer it to have a not-too-crazy
+orientation.
+There is an analytical expression for the  values that minimize , even when
+the data isn’t centered, but it’s a more complicated to derive than the solution for
+OLS, even though the process is conceptually similar: taking the gradient, setting it
+to zero, and solving for the parameters.
+The good news is, when the dataset is centered, we again have very clean set up and
+derivation. In particular, the objective can be written as:
+and the solution is:
+One other great news is that in Equation 2.13, the matrix we are trying to invert can
+always be inverted! Why is the term  invertible? Explaining this
+requires some linear algebra. The matrix  is positive semideﬁnite, which
+implies that its eigenvalues  are greater than or equal to 0. The matrix
+ has eigenvalues  which are guaranteed to be strictly
+positive since . Recalling that the determinant of a matrix is simply the
+product of its eigenvalues, we get that  and conclude that
+ is invertible.
+2.8 Evaluating learning algorithmsJridge(θ,θ0)=1
+nn
+∑
+i=1(θTx(i)+θ0−y(i))2
++λ∥θ∥2(2.10)
+λ θ
+θ0 θ0
+y
+θ,θ0 Jridge
+Jridge(θ)=1
+nn
+∑
+i=1(θTx(i)−y(i))2
++λ∥θ∥2(2.11)
+θridge=(XTX+nλI)−1XTY (2.12)
+Derivation of the Ridge Regression Solution for Centered Data Set
+(XTX+nλI)
+XTX
+{γi}i
+XTX+nλI {γi+nλ}i
+λ>0
+det(XTX+nλI)>0
+XTX+nλICompare Equation 2.10 and
+Equation 2.11. W hat is the
+difference between the two? How
+is it possible to drop the offset
+here? In this section, we will explore how to evaluate supervised machine-learning
+algorithms. We will study the special case of applying them to regression problems,
+but the basic ideas of validation, hyper-parameter selection, and cross-validation
+apply much more broadly.
+We have seen how linear regression is a well-formed optimization problem, which
+has an analytical solution when ridge regularization is applied. But how can one
+choose the best amount of regularization, as parameterized by ? Two key ideas
+involve the evaluation of the performance of a hypothesis, and a separate
+evaluation of the algorithm used to produce hypotheses, as described below.
+The performance of a given hypothesis  may be evaluated by measuring test error
+on data that was not used to train it. Given a training set  a regression
+hypothesis , and if we choose squared loss, we can deﬁne the OLS training error of
+ to be the mean square error between its predictions and the expected outputs:
+Test error captures the performance of  on unseen data, and is the mean square
+error on the test set, with a nearly identical expression as that above, differing only
+in the range of index :
+on  new examples that were not used in the process of constructing .
+In machine learning in general, not just regression, it is useful to distinguish two
+ways in which a hypothesis  might contribute to test error. Two are:
+Structural error: This is error that arises because there is no hypothesis  that
+will perform well on the data, for example because the data was really generated by
+a sine wave but we are trying to ﬁt it with a line.
+Estimation error: This is error that arises because we do not have enough data (or
+the data are in some way unhelpful) to allow us to choose a good , or because
+we didn’t solve the optimization problem well enough to ﬁnd the best  given the
+data that we had.
+When we increase , we tend to increase structural error but decrease estimation
+error, and vice versa.
+Note that this section is relevant to learning algorithms generally—we are just introducing
+the topic here since we now have an algorithm that can be evaluated!λ
+2.8.1 Evaluating hypotheses
+h
+Dn,
+h
+h
+Etrain(h)=1
+nn
+∑
+i=1[h(x(i))−y(i)]2
+.
+h
+i
+Etest(h)=1
+n′n+n′
+∑
+i=n+1[h(x(i))−y(i)]2
+n′h
+h∈H
+h∈H
+h∈H
+h
+λ
+2.8.2 Evaluating learning algorithms A learning algorithm is a procedure that takes a data set  as input and returns an
+hypothesis  from a hypothesis class ; it looks like
+Keep in mind that  has parameters. The learning algorithm itself may have its own
+parameters, and such parameters are often called hyperparameters. The analytical
+solutions presented above for linear regression, e.g., Equation 2.12, may be thought
+of as learning algorithms, where  is a hyperparameter that governs how the
+learning algorithm works and can strongly affect its performance.
+How should we evaluate the performance of a learning algorithm? This can be
+tricky. There are many potential sources of variability in the possible result of
+computing test error on a learned hypothesis :
+Which particular training examples occurred in 
+Which particular testing examples occurred in 
+Randomization inside the learning algorithm itself
+Generally, to evaluate how well a learning algorithm works, given an unlimited data
+source, we would like to execute the following process multiple times:
+Train on a new training set (subset of our big data source)
+Evaluate resulting  on a validation set that does not overlap the training set
+(but is still a subset of our same big data source)
+Running the algorithm multiple times controls for possible poor choices of training
+set or unfortunate randomization inside the algorithm itself.
+One concern is that we might need a lot of data to do this, and in many applications
+data is expensive or difﬁcult to acquire. We can re-use data with cross validation (but
+it’s harder to do theoretical analysis).
+Algorithm 2.1 Cross-Validate
+Require: Data , integer 
+Divide  into  chunks  (of roughly equal size)
+for  to  do
+Train  on  (withholding chunk  as the validation set)
+Compute "test" error  on withheld data 
+end for
+return 
+It’s very important to understand that (cross-)validation neither delivers nor
+evaluates a single particular hypothesis . It evaluates the learning algorithm that
+produces hypotheses.Dn
+h H
+Dtrain⟶ ⟶h learningalg(H)
+h
+λ
+h
+Dtrain
+Dtest
+2.8.2.1 Validation
+h
+2.8.2.2 Cross validation
+D k
+1: Dk D1,D2,…,Dk
+2:i=1k
+3: hiD∖Di Di
+4: Ei(hi) Di
+5:
+6:1
+k∑k
+i=1Ei(hi)
+h The hyper-parameters of a learning algorithm affect how the algorithm works but
+they are not part of the resulting hypothesis. So, for example,  in ridge regression
+affects which hypothesis will be returned, but  itself doesn’t show up in the
+hypothesis (the hypothesis is speciﬁed using parameters  and ).
+You can think about each different setting of a hyper-parameter as specifying a
+different learning algorithm.
+In order to pick a good value of the hyper-parameter, we often end up just trying a
+lot of values and seeing which one works best via validation or cross-validation.
+❓ Study Question
+How could you use cross-validation to decide whether to use analytic ridge
+regression or our random-regression algorithm and to pick  for random
+regression or  for ridge regression?
+2.8.2.3 Hyperparameter tuningλ
+λ
+θθ0
+k
+λ
