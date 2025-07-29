@@ -1,0 +1,611 @@
+This page contains all content from the legacy PDF notes; markov decision processes
+chapter.
+As we phase out the PDF, this page may receive updates not reflected in the static PDF.
+Consider a robot learning to navigate through a maze, a game-playing AI
+developing strategies through self-play, or a self-driving car making driving
+decisions in real-time. These problems share a common challenge: the agent must
+make a sequence of decisions where each choice affects future possibilities and
+rewards. Unlike static prediction tasks where we learn a one-time mapping from
+inputs to outputs, these problems require reasoning about the consequences of
+actions over time.
+This sequential and dynamical nature demands mathematical tools beyond the
+more static supervised or unsupervised learning approaches. The most general
+framework for such problems is reinforcement learning (RL), where an agent learns to
+take actions in an unknown environment to maximize cumulative rewards over
+time.
+In this chapter, we’ll first study Markov decision processes (MDPs), which provide the
+mathematical foundation for understanding and solving sequential decision
+making problems like RL. MDPs formalize the interaction between an agent and its
+environment, capturing the key elements of states, actions, rewards, and transitions.
+10.1 Definition and value functions
+Formally, a Markov decision process is 
+ where  is the state space, 
+is the action space, and:
+ is a transition model, where
+specifying a conditional probability distribution;
+ is a reward function, where 
+ specifies an immediate
+reward for taking action  when in state ; and
+ is a discount factor, which we’ll discuss in Section 10.1.2.
+In this class, we assume the rewards are deterministic functions. Further, in this
+MDP chapter, we assume the state space and action space are discrete and finite.
+10  Markov Decision Processes
+Note
+⟨S, A, T, R, γ⟩
+S
+A
+T : S × A × S →R
+T(s, a, s′) = Pr(St = s′|St−1 = s, At−1 = a) ,
+R : S × A →R
+R(s, a)
+a
+s
+γ ∈[0, 1]
+The notation 
+ uses a capital
+letter  to stand for a random
+variable, and small letter  to stand
+for a concrete value. So 
+ here is a
+random variable that can take on
+elements of  as values.
+St = s′
+S
+s
+St
+S
+10  Markov Decision Processes
+
+ The following description of a simple machine as Markov decision process provides a
+concrete example of an MDP.
+The machine has three possible operations (actions): wash , paint , and eject  (each with
+a corresponding button). Objects are put into the machine, and each time you push a
+button, something is done to the object. However, it’s an old machine, so it’s not very
+reliable. The machine has a camera inside that can clearly detect what is going on with the
+object and will output the state of the object: dirty , clean , painted , or ejected .
+For each action, this is what is done to the object:
+Wash
+If you perform the wash  operation on any object—whether it’s dirty, clean, or
+painted—it will end up clean  with probability 0.9 and dirty  otherwise.
+Paint
+If you perform the paint  operation on a clean object, it will become nicely painted
+with probability 0.8. With probability 0.1, the paint misses but the object stays clean,
+and with probability 0.1, the machine dumps rusty dust all over the object, making it
+dirty .
+If you perform the paint  operation on a painted  object, it stays painted  with
+probability 1.0.
+If you perform the paint  operation on a dirty  object, it stays dirty  with
+probability 1.0.
+Eject
+If you perform an eject  operation on any object, the object comes out of the
+machine and the process is terminated. The object remains ejected  regardless of
+any further actions.
+These descriptions specify the transition model , and the transition function for each
+action can be depicted as a state machine diagram. For example, here is the diagram for
+wash :
+Example
+T
+ dirty
+clean
+painted
+ejected
+0.1
+0.9
+0.9
+0.1
+0.1
+0.9
+1.0
+You get reward +10 for ejecting a painted object, reward 0 for ejecting a non-painted
+object, reward 0 for any action on an “ejected” object, and reward -3 otherwise. The MDP
+description would be completed by also specifying a discount factor.
+A policy is a function  that specifies what action to take in each state. The policy is
+what we will want to learn; it is akin to the strategy that a player employs to win a
+given game. Below, we take just the initial steps towards this eventual goal. We
+describe how to evaluate how good a policy is, first in the finite horizon case
+Section 10.1.1 when the total number of transition steps is finite. In the finite
+horizon case, we typically denote the policy as 
+, where  is a non-negative
+integer denoting the number of steps remaining and 
+ is the current state. Then
+we consider the infinite horizon case Section 10.1.2, when you don’t know when the
+game will be over.
+The goal of a policy is to maximize the expected total reward, averaged over the
+stochastic transitions that the domain makes. Let’s first consider the case where
+there is a finite horizon , indicating the total number of steps of interaction that the
+agent will have with the MDP.
+We seek to measure the goodness of a policy. We do so by defining for a given
+horizon  and MDP policy 
+, the “horizon  value” of a state, 
+. We do this by
+induction on the horizon, which is the number of steps left to go.
+The base case is when there are no steps remaining, in which case, no matter what
+state we’re in, the value is 0, so
+Then, the value of a policy in state  at horizon 
+ is equal to the reward it will
+get in state  plus the next state’s expected horizon  value, discounted by a factor 
+π
+πh(s)
+h
+s ∈S
+10.1.1 Finite-horizon value functions
+h
+h
+πh
+h
+Vπ
+h(s)
+Vπ
+0(s) = 0 .
+(10.1)
+s
+h + 1
+s
+h
+γ
+ . So, starting with horizons 1 and 2, and then moving to the general case, we have:
+The sum over  is an expectation: it considers all possible next states , and
+computes an average of their 
+-horizon values, weighted by the probability
+that the transition function from state  with the action chosen by the policy 
+assigns to arriving in state , and discounted by .
+❓ Study Question
+What is the value of
+for any given state–action pair 
+?
+❓ Study Question
+Convince yourself that the definitions in Equation 10.1 and Equation 10.3 are
+special cases of the more general formulation in Equation 10.4.
+Then we can say that a policy  is better than policy  for horizon  if and only if
+for all 
+, 
+ and there exists at least one 
+ such that
+.
+More typically, the actual finite horizon is not known, i.e., when you don’t know
+when the game will be over! This is called the infinite horizon version of the problem.
+How does one evaluate the goodness of a policy in the infinite horizon case?
+If we tried to simply take our definitions above and use them for an infinite
+horizon, we could get in trouble. Imagine we get a reward of 1 at each step under
+one policy and a reward of 2 at each step under a different policy. Then the reward
+as the number of steps grows in each case keeps growing to become infinite in the
+limit of more and more steps. Even though it seems intuitive that the second policy
+should be better, we can’t justify that by saying 
+.
+Vπ
+1(s) = R(s, π1(s)) + 0
+(10.2)
+Vπ
+2(s) = R(s, π2(s)) + γ ∑
+s′
+T(s, π2(s), s′)Vπ
+1(s′)
+(10.3)
+⋮
+Vπ
+h(s) = R(s, πh(s)) + γ ∑
+s′
+T(s, πh(s), s′)Vπ
+h−1(s′)
+(10.4)
+s′
+s′
+(h −1)
+s
+πh(s)
+s′
+γ
+∑
+s′
+T(s, a, s′)
+(s, a)
+π
+¯π
+h
+s ∈S Vπ
+h(s) ≥V¯π
+h(s)
+s ∈S
+Vπ
+h(s) > V¯π
+h(s)
+10.1.2 Infinite-horizon value functions
+∞< ∞
+ One standard approach to deal with this problem is to consider the discounted
+infinite horizon. We will generalize from the finite-horizon case by adding a
+discount factor.
+In the finite-horizon case, we valued a policy based on an expected finite-horizon
+value:
+where 
+ is the reward received at time .
+What is 
+? This mathematical notation indicates an expectation, i.e., an average taken
+over all the random possibilities which may occur for the argument. Here, the expectation
+is taken over the conditional probability 
+, where 
+ is the random variable
+for the reward, subject to the policy being  and the state being 
+. Since  is a function,
+this notation is shorthand for conditioning on all of the random variables implied by
+policy  and the stochastic transitions of the MDP.
+A very important point is that 
+ is always deterministic (in this class) for any given
+ and . Here 
+ represents the set of all possible 
+ at time step ; this 
+ is a
+random variable because the state we’re in at step  is itself a random variable, due to
+prior stochastic state transitions up to but not including at step  and prior (deterministic)
+actions dictated by policy 
+Now, for the infinite-horizon case, we select a discount factor 
+, and
+evaluate a policy based on its expected infinite horizon value:
+Note that the  indices here are not the number of steps to go, but actually the
+number of steps forward from the starting state (there is no sensible notion of “steps
+to go” in the infinite horizon case).
+Equation 10.5 and Equation 10.6 are a conceptual stepping stone. Our main objective is to
+get to Equation 10.8, which can also be viewed as including  in Equation 10.4, with the
+appropriate definition of the infinite-horizon value.
+There are two good intuitive motivations for discounting. One is related to
+economic theory and the present value of money: you’d generally rather have some
+money today than that same amount of money next week (because you could use it
+now or invest it). The other is to think of the whole process terminating, with
+probability 
+ on each step of the interaction. (At every step, your expected
+future lifetime, given that you have survived until now, is 
+.) This value is
+the expected amount of reward the agent would gain under this terminating model.
+E [
+h−1
+∑
+t=0
+γ tRt ∣π, s0] ,
+(10.5)
+Rt
+t
+Note
+E [⋅]
+Pr(Rt = r ∣π, s0)
+Rt
+π
+s0
+π
+π
+R(s, a)
+s
+a
+Rt
+R(st, a)
+t
+Rt
+t
+t
+π.
+0 ≤γ ≤1
+E [
+∞
+∑
+t=0
+γ tRt ∣π, s0] = E [R0 + γR1 + γ 2R2 + … ∣π, s0] .
+(10.6)
+t
+Note
+γ
+1 −γ
+1/(1 −γ)
+ ❓ Study Question
+Verify this fact: if, on every day you wake up, there is a probability of 
+ that
+today will be your last day, then your expected lifetime is 
+ days.
+Let us now evaluate a policy in terms of the expected discounted infinite-horizon
+value that the agent will get in the MDP if it executes that policy. We define the
+infinite-horizon value of a state  under policy  as
+Because the expectation of a linear combination of random variables is the linear
+combination of the expectations, we have
+The equation defined in Equation 10.8 is known as the Bellman Equation, which
+breaks down the value function into the immediate reward and the (discounted)
+future value function. You could write down one of these equations for each of the
+ states. There are  unknowns 
+. These are linear equations, and
+standard software (e.g., using Gaussian elimination or other linear algebraic
+methods) will, in most cases, enable us to find the value of each state under this
+policy.
+10.2 Finding policies for MDPs
+Given an MDP, our goal is typically to find a policy that is optimal in the sense that
+it gets as much total reward as possible, in expectation over the stochastic
+transitions that the domain makes. We build on what we have learned about
+evaluating the goodness of a policy (Section 10.1.2), and find optimal policies for the
+finite horizon case (Section 10.2.1), then the infinite horizon case (Section 10.2.2).
+How can we go about finding an optimal policy for an MDP? We could imagine
+enumerating all possible policies and calculating their value functions as in the
+previous section and picking the best one – but that’s too much work!
+The first observation to make is that, in a finite-horizon problem, the best action to
+take depends on the current state, but also on the horizon: imagine that you are in a
+situation where you could reach a state with reward 5 in one step or a state with
+reward 100 in two steps. If you have at least two steps to go, then you’d move
+1 −γ
+1/(1 −γ)
+s
+π
+Vπ
+∞(s) = E[R0 + γR1 + γ 2R2 + ⋯∣π, S0 = s]
+= E[R0 + γ(R1 + γ(R2 + γ …))) ∣π, S0 = s] .
+(10.7)
+Vπ
+∞(s) = E[R0 ∣π, S0 = s] + γE[R1 + γ(R2 + γ …))) ∣π, S0 = s]
+= R(s, π(s)) + γ ∑
+s′
+T(s, π(s), s′)Vπ
+∞(s′) .
+(10.8)
+n = |S|
+n
+Vπ(s)
+10.2.1 Finding optimal finite-horizon policies
+ toward the reward 100 state, but if you only have one step left to go, you should go
+in the direction that will allow you to gain 5!
+For the finite-horizon case, we define 
+ to be the expected value of
+starting in state ,
+executing action , and
+continuing for 
+ more steps executing an optimal policy for the
+appropriate horizon on each step.
+Similar to our definition of 
+ for evaluating a policy, we define the 
+ function
+recursively according to the horizon. The only difference is that, on each step with
+horizon , rather than selecting an action specified by a given policy, we select the
+value of  that will maximize the expected 
+ value of the next state.
+where 
+ denotes the next time-step state/action pair. We can solve for the
+values of 
+ with a simple recursive algorithm called finite-horizon value iteration
+that just computes 
+ starting from horizon 0 and working backward to the desired
+horizon . Given 
+, an optimal 
+ can be found as follows:
+which gives the immediate best action(s) to take when there are  steps left; then
+ gives the best action(s) when there are 
+ steps left, and so on. In the
+case where there are multiple best actions, we typically can break ties randomly.
+Additionally, it is worth noting that in order for such an optimal policy to be
+computed, we assume that the reward function 
+ is bounded on the set of all
+possible (state, action) pairs. Furthermore, we will assume that the set of all possible
+actions is finite.
+❓ Study Question
+The optimal value function is unique, but the optimal policy is not. Think of a
+situation in which there is more than one optimal policy.
+Q∗
+h(s, a)
+s
+a
+h −1
+V∗
+h
+Q∗
+h
+h
+a
+Q∗
+h
+Q∗
+0(s, a) = 0
+Q∗
+1(s, a) = R(s, a) + 0
+Q∗
+2(s, a) = R(s, a) + γ ∑
+s′
+T(s, a, s′) max
+a′
+Q∗
+1(s′, a′)
+⋮
+Q∗
+h(s, a) = R(s, a) + γ ∑
+s′
+T(s, a, s′) max
+a′
+Q∗
+h−1(s′, a′)
+(s′, a′)
+Q∗
+h
+Q∗
+h
+h
+Q∗
+h
+π∗
+h
+π∗
+h(s) = arg max
+a
+Q∗
+h(s, a) .
+h
+π∗
+h−1(s)
+(h −1)
+R(s, a)
+10.2.2 Finding optimal infinite-horizon policies
+We can also define the action-value
+function for a fixed policy ,
+denoted by 
+. This quantity
+represents the expected sum of
+discounted rewards obtained by
+taking action  in state  and
+thereafter following the policy 
+over the remaining horizon of
+ steps.
+Similar to 
+, 
+ satisfies
+the Bellman recursion/equations
+introduced earlier. In fact, for a
+deterministic policy :
+However, since our primary goal in
+dealing with action values is
+typically to identify an optimal
+policy, we will not dwell
+extensively on (
+). Instead,
+we will place more emphasis on
+the optimal action-value functions
+.
+π
+Qπ
+h(s, a)
+a
+s
+π
+h −1
+Vπ
+h(s) Qπ
+h(s, a)
+π
+Qπ
+h(s, π(s)) = Vπ
+h(s).
+Qπ
+h(s, a)
+Q∗
+h(s, a)
+ In contrast to the finite-horizon case, the best way of behaving in an infinite-horizon
+discounted MDP is not time-dependent. That is, the decisions you make at time
+ looking forward to infinity, will be the same decisions that you make at time
+ for any positive , also looking forward to infinity.
+An important theorem about MDPs is: in the infinite-horizon case, there exists a
+stationary optimal policy 
+ (there may be more than one) such that for all 
+and all other policies , we have
+There are many methods for finding an optimal policy for an MDP. We have already
+seen the finite-horizon value iteration case. Here we will study a very popular and
+useful method for the infinite-horizon case, infinite-horizon value iteration. It is also
+important to us, because it is the basis of many reinforcement-learning methods.
+We will again assume that the reward function 
+ is bounded on the set of all
+possible (state, action) pairs and additionally that the number of actions in the
+action space is finite. Define 
+ to be the expected infinite-horizon value of
+being in state , executing action , and executing an optimal policy 
+ thereafter.
+Using similar reasoning to the recursive definition of 
+ we can express this value
+recursively as
+This is also a set of equations, one for each 
+ pair. This time, though, they are
+not linear (due to the 
+ operation), and so they are not easy to solve. But there is
+a theorem that says they have a unique solution!
+Once we know the optimal action-value function 
+, then we can extract an
+optimal policy 
+ as
+We can iteratively solve for the 
+ values with the infinite-horizon value iteration
+algorithm, shown below:
+Algorithm 10.1 Infinite-Horizon-Value-Iteration
+Require: , 
+, , , , 
+Initialization:
+for each 
+ and 
+ do
+end for
+while not converged do
+for each 
+ and 
+ do
+end for
+if 
+ then
+return 
+end if
+t = 0
+t = T
+T
+π∗
+s ∈S
+π
+Vπ(s) ≤Vπ∗(s) .
+R(s, a)
+Q∗
+∞(s, a)
+s
+a
+π∗
+Vπ,
+Q∗
+∞(s, a) = R(s, a) + γ ∑
+s′
+T(s, a, s′) max
+a′
+Q∗
+∞(s′, a′) .
+(s, a)
+max
+Q∗
+∞(s, a)
+π∗
+π∗(s) = arg max
+a
+Q∗
+∞(s, a)
+Q∗
+S A T R γ ϵ
+1:
+2:
+s ∈S
+a ∈A
+3:
+Qold(s, a) ←0
+4:
+5:
+6:
+s ∈S
+a ∈A
+7:
+Qnew(s, a) ←R(s, a) + γ ∑
+s′
+T(s, a, s′) max
+a′
+Qold(s′, a′)
+8:
+9:
+max
+s,a |Qold(s, a) −Qnew(s, a)| < ϵ
+10:
+Qnew
+11:
+ end while
+There are a lot of nice theoretical results about infinite-horizon value iteration. For
+some given (not necessarily optimal) 
+ function, define 
+.
+After executing infinite-horizon value iteration with convergence hyper-
+parameter ,
+There is a value of  such that
+As the algorithm executes, 
+ decreases monotonically on each
+iteration.
+The algorithm can be executed asynchronously, in parallel: as long as all 
+pairs are updated infinitely often in an infinite run, it still converges to the
+optimal value.
+12:
+Qold ←Qnew
+13:
+Theory
+Q
+πQ(s) = arg maxa Q(s, a)
+ϵ
+∥VπQnew −Vπ∗∥max < ϵ .
+ϵ
+∥Qold −Qnew∥max < ϵ ⟹πQnew = π∗
+∥VπQnew −Vπ∗∥max
+(s, a)

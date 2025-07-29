@@ -1,0 +1,432 @@
+B.1 Strategies towards adaptive step-size
+We’ll start by looking at the notion of a running average. It’s a computational
+strategy for estimating a possibly weighted average of a sequence of data. Let our
+data sequence be 
+; then we define a sequence of running average values,
+ using the equations
+where 
+. If 
+ is a constant, then this is a moving average, in which
+So, you can see that inputs 
+ closer to the end of the sequence have more effect on
+ than early inputs.
+If, instead, we set 
+, then we get the actual average.
+❓ Study Question
+Prove to yourself that the previous assertion holds.
+Now, we can use methods that are a bit like running averages to describe strategies
+for computing . The simplest method is momentum, in which we try to “average”
+recent gradient updates, so that if they have been bouncing back and forth in some
+direction, we take out that component of the motion. For momentum, we have
+Appendix B — Optimizing Neural
+Networks
+B.1.1 Running averages
+c1, c2, …
+C0, C1, C2, …
+C0 = 0,
+Ct = γt Ct−1 + (1 −γt) ct,
+γt ∈(0, 1)
+γt
+CT = γ CT−1 + (1 −γ) cT
+= γ(γ CT−2 + (1 −γ) cT−1) + (1 −γ) cT
+=
+T
+∑
+t=1
+γ T−t(1 −γ) ct.
+ct
+CT
+γt = t−1
+t
+B.1.2 Momentum
+η
+V0 = 0,
+Vt = γ Vt−1 + η ∇WJ(Wt−1),
+Wt = Wt−1 −Vt.
+Appendices > B  Optimizing Neural Networks
+
+ This doesn’t quite look like an adaptive step size. But what we can see is that, if we
+let 
+, then the rule looks exactly like doing an update with step size 
+on a moving average of the gradients with parameter :
+❓ Study Question
+Prove to yourself that these formulations are equivalent.
+We will find that 
+ will be bigger in dimensions that consistently have the same
+sign for 
+ and smaller for those that don’t. Of course we now have two
+parameters to set (  and ), but the hope is that the algorithm will perform better
+overall, so it will be worth trying to find good values for them. Often  is set to be
+something like 
+.
+The red arrows show the update after each successive step of mini-batch gradient
+descent with momentum. The blue points show the direction of the gradient with
+respect to the mini-batch at each step. Momentum smooths the path taken towards
+the local minimum and leads to faster convergence.
+❓ Study Question
+If you set 
+, would momentum have more of an effect or less of an effect
+than if you set it to 
+?
+Another useful idea is this: we would like to take larger steps in parts of the space
+where 
+ is nearly flat (because there’s no risk of taking too big a step due to the
+gradient being large) and smaller steps when it is steep. We’ll apply this idea to
+each weight independently, and end up with a method called adadelta, which is a
+η = η′(1 −γ)
+η′
+γ
+M0 = 0,
+Mt = γ Mt−1 + (1 −γ) ∇WJ(Wt−1),
+Wt = Wt−1 −η′ Mt.
+Vt
+∇W
+η
+γ
+γ
+0.9
+γ = 0.1
+0.9
+B.1.3 Adadelta
+J(W)
+Momentum
+ variant on adagrad (for adaptive gradient). Even though our weights are indexed by
+layer, input unit, and output unit, for simplicity here, just let 
+ be any weight in
+the network (we will do the same thing for all of them).
+The sequence 
+ is a moving average of the square of the th component of the
+gradient. We square it in order to be insensitive to the sign—we want to know
+whether the magnitude is big or small. Then, we perform a gradient update to
+weight , but divide the step size by 
+, which is larger when the surface is
+steeper in direction  at point 
+ in weight space; this means that the step size
+will be smaller when it’s steep and larger when it’s flat.
+Adam has become the default method of managing step sizes in neural networks.
+It combines the ideas of momentum and adadelta. We start by writing moving
+averages of the gradient and squared gradient, which reflect estimates of the mean
+and variance of the gradient for weight :
+A problem with these estimates is that, if we initialize 
+, they will
+always be biased (slightly too small). So we will correct for that bias by defining
+Note that 
+ is 
+ raised to the power , and likewise for 
+. To justify these
+corrections, note that if we were to expand 
+ in terms of 
+ and
+, the coefficients would sum to 1. However, the coefficient behind
+ is 
+ and since 
+, the sum of coefficients of nonzero terms is 
+;
+hence the correction. The same justification holds for 
+.
+❓ Study Question
+Wj
+gt,j = ∇WJ(Wt−1)j,
+Gt,j = γ Gt−1,j + (1 −γ) g2
+t,j,
+Wt,j = Wt−1,j −
+η
+√Gt,j + ϵ
+gt,j.
+Gt,j
+j
+j
+√Gt,j + ϵ
+j
+Wt−1
+B.1.4 Adam
+j
+gt,j = ∇WJ(Wt−1)j,
+mt,j = B1 mt−1,j + (1 −B1) gt,j,
+vt,j = B2 vt−1,j + (1 −B2) g2
+t,j.
+m0 = v0 = 0
+^mt,j =
+mt,j
+1 −Bt
+1
+,
+^vt,j =
+vt,j
+1 −Bt
+2
+,
+Wt,j = Wt−1,j −
+η
+√^vt,j + ϵ
+^mt,j.
+Bt
+1
+B1
+t
+Bt
+2
+mt,j
+m0,j
+g0,j, g1,j, … , gt,j
+m0,j
+Bt
+1
+m0,j = 0
+1 −Bt
+1
+vt,j
+Although, interestingly, it may
+actually violate the convergence
+conditions of SGD:
+arxiv.org/abs/1705.08292
+ Define 
+ directly as a moving average of 
+. What is the decay (
+parameter)?
+Even though we now have a step size for each weight, and we have to update
+various quantities on each iteration of gradient descent, it’s relatively easy to
+implement by maintaining a matrix for each quantity (
+, 
+, 
+, 
+) in each layer
+of the network.
+B.2 Batch Normalization Details
+Let’s think of the batch-normalization layer as taking 
+ as input and producing an
+output 
+. But now, instead of thinking of 
+ as an 
+ vector, we have to
+explicitly think about handling a mini-batch of data of size 
+ all at once, so 
+ will
+be an 
+ matrix, and so will the output 
+.
+Our first step will be to compute the batchwise mean and standard deviation. Let 
+be the 
+ vector where
+and let 
+ be the 
+ vector where
+The basic normalized version of our data would be a matrix, element 
+ of which
+is
+where  is a very small constant to guard against division by zero.
+However, if we let these be our 
+ values, we really are forcing something too
+strong on our data—our goal was to normalize across the data batch, but not
+necessarily force the output values to have exactly mean 0 and standard deviation 1.
+So, we will give the layer the opportunity to shift and scale the outputs by adding
+new weights to the layer. These weights are 
+ and 
+, each of which is an 
+vector. Using the weights, we define the final output to be
+That’s the forward pass. Whew!
+Now, for the backward pass, we have to do two things: given 
+,
+^mt,j
+gt,j
+γ
+mℓ
+t vℓ
+t gℓ
+t g2
+t
+ℓ
+Z l
+ˆZ l
+Z l
+nl × 1
+K
+Z l
+nl × K
+ˆZ l
+μl
+nl × 1
+μl
+i = 1
+K
+K
+∑
+j=1
+Z l
+ij,
+σl
+nl × 1
+σl
+i =
+1
+K
+K
+∑
+j=1
+(Z l
+ij −μl
+i)
+2
+.
+
+
+⎷
+(i, j)
+Z
+l
+ij =
+Z l
+ij −μl
+i
+σl
+i + ϵ
+,
+–
+ϵ
+ˆZ l
+Gl
+Bl
+nl × 1
+ˆZ l
+ij = Gl
+i Z
+l
+ij + Bl
+i.
+–
+∂L
+∂ˆZ l
+ Compute 
+ for back-propagation, and
+Compute 
+ and 
+ for gradient updates of the weights in this layer.
+Schematically, we have
+It’s hard to think about these derivatives in matrix terms, so we’ll see how it works
+for the components. 
+ contributes to 
+ for all data points  in the batch. So,
+Similarly, 
+ contributes to 
+ for all data points  in the batch. Thus,
+Now, let’s figure out how to do backprop. We can start schematically:
+And because dependencies only exist across the batch, but not across the unit
+outputs,
+The next step is to note that
+And now that
+where 
+ if 
+ and 0 otherwise. We need two more pieces:
+Putting the whole thing together, we get
+∂L
+∂Z l
+∂L
+∂Gl
+∂L
+∂Bl
+∂L
+∂B = ∂L
+∂ˆZ
+∂ˆZ
+∂B .
+Bi
+ˆZij
+j
+∂L
+∂Bi
+= ∑
+j
+∂L
+∂ˆZij
+∂ˆZij
+∂Bi
+= ∑
+j
+∂L
+∂ˆZij
+.
+Gi
+ˆZij
+j
+∂L
+∂Gi
+= ∑
+j
+∂L
+∂ˆZij
+∂ˆZij
+∂Gi
+= ∑
+j
+∂L
+∂ˆZij
+Zij.
+–
+∂L
+∂Z = ∂L
+∂ˆZ
+∂ˆZ
+∂Z .
+∂L
+∂Zij
+=
+K
+∑
+k=1
+∂L
+∂ˆZik
+∂ˆZik
+∂Zij
+.
+∂ˆZik
+∂Zij
+= ∂ˆZik
+∂Zik
+∂Zik
+∂Zij
+= Gi
+∂Zik
+∂Zij
+.
+–
+–
+–
+∂Zik
+∂Zij
+= (δjk −∂μi
+∂Zij
+) 1
+σi
+−Zik −μi
+σ2
+i
+∂σi
+∂Zij
+,
+–
+δjk = 1
+j = k
+∂μi
+∂Zij
+= 1
+K ,
+∂σi
+∂Zij
+= Zij −μi
+K σi
+.
+∂L
+∂Zij
+=
+K
+∑
+k=1
+∂L
+∂ˆZik
+Gi
+1
+K σi
+(K δjk −1 −(Zik −μi)(Zij −μi)
+σ2
+i
+).

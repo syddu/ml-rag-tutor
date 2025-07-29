@@ -1,0 +1,630 @@
+What are some conventions for derivatives of matrices and vectors? It will always
+work to explicitly write all indices and treat everything as scalars, but we
+introduce here some shortcuts that are often faster to use and helpful for
+understanding.
+There are at least two consistent but different systems for describing shapes and
+rules for doing matrix derivatives. In the end, they all are correct, but it is
+important to be consistent.
+We will use what is often called the ‘Hessian’ or denominator layout, in which we
+say that for
+ of size 
+ and  of size 
+, 
+ is a matrix of size 
+ with the 
+entry 
+. This denominator layout convention has been adopted by the field
+of machine learning to ensure that the shape of the gradient is the same as the
+shape of the respective derivative. This is somewhat controversial at large, but alas,
+we shall continue with denominator layout.
+The discussion below closely follows the Wikipedia on matrix derivatives.
+A.1 The shapes of things
+Here are important special cases of the rule above:
+Scalar-by-scalar: For  of size 
+ and  of size 
+, 
+ is the (scalar)
+partial derivative of  with respect to .
+Scalar-by-vector: For  of size 
+ and  of size 
+, 
+ (also written
+, the gradient of  with respect to ) is a column vector of size 
+ with
+the 
+ entry 
+:
+Vector-by-scalar: For  of size 
+ and  of size 
+, 
+ is a row
+vector of size 
+ with the 
+ entry 
+:
+Vector-by-vector: For  of size 
+ and  of size 
+, 
+ is a matrix of
+size 
+ with the 
+ entry 
+:
+Appendix A — Matrix derivative common
+cases
+x
+n × 1
+y
+m × 1 ∂y/∂x
+n × m
+(i, j)
+∂yj/∂xi
+x
+1 × 1
+y
+1 × 1 ∂y/∂x
+y
+x
+x
+n × 1
+y
+1 × 1 ∂y/∂x
+∇xy
+y
+x
+n × 1
+ith
+∂y/∂xi
+∂y/∂x =
+.
+⎡
+⎢
+⎣
+∂y/∂x1
+∂y/∂x2
+⋮
+∂y/∂xn
+⎤
+⎥
+⎦
+x
+1 × 1
+y
+m × 1 ∂y/∂x
+1 × m
+jth
+∂yj/∂x
+∂y/∂x = [
+].
+∂y1/∂x
+∂y2/∂x
+⋯
+∂ym/∂x
+x
+n × 1
+y
+m × 1 ∂y/∂x
+n × m
+(i, j)
+∂yj/∂xi
+Appendices > A  Matrix derivative common cases
+
+1
+ Scalar-by-matrix: For 
+ of size 
+ and  of size 
+, 
+ (also written
+, the gradient of  with respect to 
+) is a matrix of size 
+ with the
+ entry 
+:
+You may notice that in this list, we have not included matrix-by-matrix, matrix-by-
+vector, or vector-by-matrix derivatives. This is because, generally, they cannot be
+expressed nicely in matrix form and require higher order objects (e.g., tensors) to
+represent their derivatives. These cases are beyond the scope of this course.
+Additionally, notice that for all cases, you can explicitly compute each element of
+the derivative object using (scalar) partial derivatives. You may find it useful to
+work through some of these by hand as you are reviewing matrix derivatives.
+A.2 Some vector-by-vector identities
+Here are some examples of 
+. In each case, assume  is 
+,  is 
+,  is
+a scalar constant,  is a vector that does not depend on  and 
+ is a matrix that
+does not depend on ,  and  are scalars that do depend on , and  and  are
+vectors that do depend on . We also have vector-valued functions  and .
+First, we will cover a couple of fundamental cases: suppose that  is an 
+vector which is not a function of , an 
+ vector. Then,
+is an 
+ matrix of 0s. This is similar to the scalar case of differentiating a
+constant. Next, we can consider the case of differentiating a vector with respect to
+itself:
+This is the 
+ identity matrix, with 1’s along the diagonal and 0’s elsewhere. It
+makes sense, because 
+ is 1 for 
+ and 0 otherwise. This identity is also
+similar to the scalar case.
+∂y/∂x =
+.
+⎡
+⎢
+⎣
+∂y1/∂x1
+∂y2/∂x1
+⋯
+∂ym/∂x1
+∂y1/∂x2
+∂y2/∂x2
+⋯
+∂ym/∂x2
+⋮
+⋮
+⋱
+⋮
+∂y1/∂xn
+∂y2/∂xn
+⋯
+∂ym/∂xn
+⎤
+⎥
+⎦
+X
+n × m
+y
+1 × 1 ∂y/∂X
+∇Xy
+y
+X
+n × m
+(i, j)
+∂y/∂Xi,j
+∂y/∂X =
+.
+⎡
+⎢
+⎣
+∂y/∂X1,1
+⋯
+∂y/∂X1,m
+⋮
+⋱
+⋮
+∂y/∂Xn,1
+⋯
+∂y/∂Xn,m
+⎤
+⎥
+⎦
+∂y/∂x
+x
+n × 1 y
+m × 1 a
+a
+x
+A
+x u
+v
+x
+u
+v
+x
+f
+g
+A.2.1 Some fundamental cases
+a
+m × 1
+x
+n × 1
+∂a
+∂x = 0,
+(A.1)
+n × m
+∂x
+∂x = I
+n × n
+∂xj/xi
+i = j
+ Let the dimensions of 
+ be 
+. Then the object 
+ is an 
+ vector. We can
+then compute the derivative of 
+ with respect to  as:
+Note that any element of the column vector 
+ can be written as, for 
+:
+Thus, computing the 
+ entry of 
+ requires computing the partial derivative
+Therefore, the 
+ entry of 
+ is the 
+ entry of 
+:
+Similarly, for objects 
+ of the same shape, one can obtain,
+Suppose that 
+ are both vectors of size 
+. Then,
+Suppose that  is a scalar constant and  is an 
+ vector that is a function of .
+Then,
+One can extend the previous identity to vector- and matrix-valued constants.
+Suppose that  is a vector with shape 
+ and  is a scalar which depends on .
+Then,
+First, checking dimensions, 
+ is 
+ and  is 
+ so 
+ is 
+ and our
+answer is 
+ as it should be. Now, checking a value, element 
+ of the
+A.2.2 Derivatives involving a constant matrix
+A
+m × n
+Ax
+m × 1
+Ax
+x
+∂Ax
+∂x
+=
+⎡
+⎢
+⎣
+∂(Ax)1/∂x1
+∂(Ax)2/∂x1
+⋯
+∂(Ax)m/∂x1
+∂(Ax)1/∂x2
+∂(Ax)2/∂x2
+⋯
+∂(Ax)m/∂x2
+⋮
+⋮
+⋱
+⋮
+∂(Ax)1/∂xn
+∂(Ax)2/∂xn
+⋯
+∂(Ax)m/∂xn
+⎤
+⎥
+⎦
+Ax
+j = 1, … , m
+(Ax)j =
+n
+∑
+k=1
+Aj,kxk.
+(i, j)
+∂Ax
+∂x
+∂(Ax)j/∂xi :
+∂(Ax)j/∂xi = ∂(
+n
+∑
+k=1
+Aj,kxk)/∂xi = Aj,i
+(i, j)
+∂Ax
+∂x
+(j, i)
+A
+∂Ax
+∂x
+= AT
+(A.2)
+x, A
+∂xTA
+∂x
+= A
+(A.3)
+A.2.3 Linearity of derivatives
+u, v
+m × 1
+∂(u + v)
+∂x
+= ∂u
+∂x + ∂v
+∂x
+(A.4)
+a
+u
+m × 1
+x
+∂au
+∂x = a ∂u
+∂x
+a
+m × 1
+v
+x
+∂va
+∂x = ∂v
+∂x aT
+∂v/∂x
+n × 1
+a
+m × 1
+aT
+1 × m
+n × m
+(i, j)
+ answer is 
+ = 
+ which corresponds to element 
+ of
+.
+Similarly, suppose that 
+ is a matrix which does not depend on  and  is a
+column vector which does depend on . Then,
+Suppose that  is a scalar which depends on , while  is a column vector of shape
+ and  is a column vector of shape 
+. Then,
+One can see this relationship by expanding the derivative as follows:
+Then, one can use the product rule for scalar-valued functions,
+to obtain the desired result.
+Suppose that  is a vector-valued function with output vector of shape 
+, and
+the argument to  is a column vector  of shape 
+ which depends on . Then,
+one can obtain the chain rule as,
+Following “the shapes of things,” 
+ is 
+ and 
+ is 
+, where
+element 
+ is 
+. The same chain rule applies for further compositions
+of functions:
+A.3 Some other identities
+You can get many scalar-by-vector and vector-by-scalar cases as special cases of the
+rules above, making one of the relevant vectors just be 1 x 1. Here are some other
+ones that are handy. For more, see the Wikipedia article on Matrix derivatives (for
+consistency, only use the ones in denominator layout).
+∂vaj/∂xi
+(∂v/∂xi)aj
+(i, j)
+(∂v/∂x)aT
+A
+x
+u
+x
+∂Au
+∂x
+= ∂u
+∂x AT
+A.2.4 Product rule (vector-valued numerator)
+v
+x
+u
+m × 1
+x
+n × 1
+∂vu
+∂x = v ∂u
+∂x + ∂v
+∂x uT
+∂vu
+∂x =
+.
+⎡
+⎢
+⎣
+∂(vu1)/∂x1
+∂(vu2)/∂x1
+⋯
+∂(vum)/∂x1
+∂(vu1)/∂x2
+∂(vu2)/∂x2
+⋯
+∂(vum)/∂x2
+⋮
+⋮
+⋱
+⋮
+∂(vu1)/∂xn
+∂(vu2)/∂xn
+⋯
+∂(vum)/∂xn
+⎤
+⎥
+⎦
+∂(vuj)/∂xi = v(∂uj/∂xi) + (∂v/∂xi)uj,
+A.2.5 Chain rule
+g
+m × 1
+g
+u
+d × 1
+x
+∂g(u)
+∂x
+= ∂u
+∂x
+∂g(u)
+∂u
+∂u/∂x
+n × d
+∂g(u)/∂u
+d × m
+(i, j)
+∂g(u)j/∂ui
+∂f(g(u))
+∂x
+= ∂u
+∂x
+∂g(u)
+∂u
+∂f(g)
+∂g
+T
+ A.4 Derivation of gradient for linear regression
+Recall here that 
+ is a matrix of of size 
+ and 
+ is an 
+ vector.
+Applying identities Equation A.3, Equation A.5,Equation A.4, Equation A.2,
+Equation A.1
+A.5 Matrix derivatives using Einstein summation
+You do not have to read or learn this! But you might find it interesting or helpful.
+Consider the objective function for linear regression, written out as products of
+matrices:
+where 
+ is 
+, 
+ is 
+, and  is 
+. How does one show, with no
+shortcuts, that
+One neat way, which is very explicit, is to simply write all the matrices as variables
+with row and column indices, e.g., 
+ is the row , column  entry of the matrix
+. Furthermore, let us use the convention that in any product, all indices which
+appear more than once get summed over; this is a popular convention in
+theoretical physics, and lets us suppress all the summation symbols which would
+otherwise clutter the following expresssions. For example, 
+ would be the
+implicit summation notation giving the element at the 
+ row of the matrix-vector
+product 
+.
+Using implicit summation notation with explicit indices, we can rewrite 
+ as
+∂uTv
+∂x
+= ∂u
+∂x v + ∂v
+∂x u
+(A.5)
+∂uT
+∂x
+= ( ∂u
+∂x )
+T
+(A.6)
+X
+n × d
+Y
+n × 1
+∂(Xθ −Y)T(Xθ −Y)/n
+∂θ
+= 2
+n
+∂(Xθ −Y)
+∂θ
+(Xθ −Y)
+= 2
+n ( ∂Xθ
+∂θ
+−∂Y
+∂θ )(Xθ −Y)
+= 2
+n (XT −0)(Xθ −Y)
+= 2
+n XT(Xθ −Y)
+J(θ) = 1
+n (Xθ −Y )T(Xθ −Y ) ,
+X
+n × d Y
+n × 1
+θ
+d × 1
+∇θJ = 2
+n XT(Xθ −Y ) ?
+Xab
+a
+b
+X
+Xabθb
+ath
+Xθ
+J(θ)
+J(θ) = 1
+n (Xabθb −Ya) (Xacθc −Ya) .
+ Note that we no longer need the transpose on the first term, because all that
+transpose accomplished was to take a dot product between the vector given by the
+left term, and the vector given by the right term. With implicit summation, this is
+accomplished by the two terms sharing the repeated index .
+Taking the derivative of  with respect to the 
+ element of  thus gives, using the
+chain rule for (ordinary scalar) multiplication:
+where the second line follows from the first, with the definition that 
+ only
+when 
+ (and similarly for 
+). And the third line follows from the second by
+recognizing that the two terms in the second line are identical. Now note that in
+this implicit summation notation, the 
+ element of the matrix product of  and
+ is 
+. That is, ordinary matrix multiplication sums over indices
+which are adjacent to each other, because a row of  times a column of 
+ becomes
+a scalar number. So the term in the above equation with 
+ is not a matrix
+product of 
+ with 
+. However, taking the transpose 
+ switches row and column
+indices, so 
+. And 
+ is a matrix product of 
+ with 
+! Thus, we
+have that
+which is the desired result.
+a
+J
+dth
+θ
+dJ
+dθd
+=
+1
+n [Xabδbd (Xacθc −Ya) + (Xabθb −Ya)Xacδcd]
+=
+1
+n [Xad (Xacθc −Ya) + (Xabθb −Ya)Xad]
+=
+2
+n Xad (Xabθb −Ya) ,
+δbd = 1
+b = d
+δcd
+a, b
+A
+B
+(AB)ac = AabBbc
+A
+B
+XadXab
+X
+X
+XT
+Xad = X T
+da
+X T
+daXab
+XT
+X
+dJ
+dθd
+= 2
+n X T
+da (Xabθb −Ya)
+= 2
+n [XT (Xθ −Y )]d ,

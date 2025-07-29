@@ -1,0 +1,1501 @@
+This page contains all content from the legacy PDF notes; neural networks chapter.
+As we phase out the PDF, this page may receive updates not reflected in the static PDF.
+You’ve probably been hearing a lot about “neural networks.” Now that we have
+several useful machine-learning concepts (hypothesis classes, classification,
+regression, gradient descent, regularization, etc.), we are well equipped to
+understand neural networks in detail.
+This is, in some sense, the “third wave” of neural nets. The basic idea is founded on
+the 1943 model of neurons of McCulloch and Pitts and the learning ideas of Hebb.
+There was a great deal of excitement, but not a lot of practical success: there were
+good training methods (e.g., perceptron) for linear functions, and interesting
+examples of non-linear functions, but no good way to train non-linear functions
+from data. Interest died out for a while, but was re-kindled in the 1980s when
+several people came up with a way to train neural networks with “back-
+propagation,” which is a particular style of implementing gradient descent, that we
+will study here.
+As with many good ideas in science, the basic idea for how to train non-linear
+neural networks with gradient descent was independently developed by more than
+one researcher.
+By the mid-90s, the enthusiasm waned again, because although we could train non-
+linear networks, the training tended to be slow and was plagued by a problem of
+getting stuck in local optima. Support vector machines (SVMs) that use
+regularization of high-dimensional hypotheses by seeking to maximize the margin,
+alongside kernel methods that provide an efficient and beautiful way of using
+feature transformations to non-linearly transform data into a higher-dimensional
+space, provided reliable learning methods with guaranteed convergence and no
+local optima.
+However, during the SVM enthusiasm, several groups kept working on neural
+networks, and their work, in combination with an increase in available data and
+computation, has made neural networks rise again. They have become much more
+reliable and capable, and are now the method of choice in many applications. There
+are many, many variations of neural networks, which we can’t even begin to survey.
+We will study the core “feed-forward” networks with “back-propagation” training,
+and then, in later chapters, address some of the major advances beyond this core.
+We can view neural networks from several different perspectives:
+6  Neural Networks
+Note
+The number of neural network
+variants increases daily, as may be
+seen on arxiv.org .
+
+6  Neural Networks
+6  Neural Networks
+
+ View 1: An application of stochastic gradient descent for classification and
+regression with a potentially very rich hypothesis class.
+View 2: A brain-inspired network of neuron-like computing elements that learn
+distributed representations.
+View 3: A method for building applications that make predictions based on huge
+amounts of data in very complex domains.
+We will mostly take view 1, with the understanding that the techniques we develop
+will enable the applications in view 3. View 2 was a major motivation for the early
+development of neural networks, but the techniques we will study do not seem to
+actually account for the biological learning processes in brains.
+6.1 Basic element
+The basic element of a neural network is a “neuron,” pictured schematically below.
+We will also sometimes refer to a neuron as a “unit” or “node.”
+
+x1
+.. .
+xm
+f(·)
+a
+w1
+wm
+w0
+z
+input
+pre-activation
+output
+activation function
+It is a (generally non-linear) function of an input vector 
+ to a single output
+value 
+.
+It is parameterized by a vector of weights 
+ and an offset or
+threshold 
+.
+We also specify an activation function 
+. In general, this is chosen to be a
+non-linear function, which means the neuron is non-linear. In the case that the
+activation function is the identity (
+) or another linear function, then the
+neuron is a linear function of ). The activation can theoretically be any function,
+though we will only be able to work with it if it is differentiable.
+The function represented by the neuron is expressed as:
+x ∈Rm
+a ∈R
+(w1, … , wm) ∈Rm
+w0 ∈R
+f : R →R
+f(x) = x
+x
+a = f(z) = f ((
+m
+∑
+j=1
+xjwj) + w0) = f(wTx + w0) .
+Some prominent researchers are, in
+fact, working hard to find
+analogues of these methods in the
+brain.
+Sorry for changing our notation
+here. We were using  as the
+dimension of the input, but we are
+trying to be consistent here with
+many other accounts of neural
+networks. It is impossible to be
+consistent with all of them though
+—there are many different ways of
+telling this story.
+d
+This should remind you of our 
+and 
+ for linear models.
+θ
+θ0
+
+6  Neural Networks
+ Before thinking about a whole network, we can consider how to train a single unit.
+Given a loss function 
+ and a dataset 
+,
+we can do (stochastic) gradient descent, adjusting the weights 
+ to minimize
+where 
+ is the output of our single-unit neural net for a given input.
+We have already studied two special cases of the neuron: linear logistic classifiers
+(LLCs) with NLL loss and regressors with quadratic loss! The activation function for
+the LLC is 
+ and for linear regression it is simply 
+.
+❓ Study Question
+Just for a single neuron, imagine for some reason, that we decide to use
+activation function 
+ and loss function
+. Derive a gradient descent update for 
+and 
+.
+6.2 Networks
+Now, we’ll put multiple neurons together into a network. A neural network in
+general takes in an input 
+ and generates an output 
+. It is constructed
+out of multiple neurons; the inputs of each neuron might be elements of  and/or
+outputs of other neurons. The outputs of the neural network are generated by 
+output units.
+In this chapter, we will only consider feed-forward networks. In a feed-forward
+network, you can think of the network as defining a function-call graph that is
+acyclic: that is, the input to a neuron can never depend on that neuron’s output.
+Data flows one way, from the inputs to the outputs, and the function computed by
+the network is just a composition of the functions computed by the individual
+neurons.
+Although the graph structure of a feed-forward neural network can really be
+anything (as long as it satisfies the feed-forward constraint), for simplicity in
+software and analysis, we usually organize them into layers. A layer is a group of
+neurons that are essentially “in parallel”: their inputs are the outputs of neurons in
+the previous layer, and their outputs are the inputs to the neurons in the next layer.
+We’ll start by describing a single layer, and then go on to the case of multiple layers.
+L(guess, actual)
+{(x(1), y(1)), … , (x(n), y(n))}
+w, w0
+J(w, w0) = ∑
+i
+L (NN(x(i); w, w0), y(i)) ,
+NN
+f(x) = σ(x)
+f(x) = x
+f(z) = ez
+L(guess, actual) = (guess −actual)2
+w
+w0
+x ∈Rm
+a ∈Rn
+x
+n
+6.2.1 Single layer
+
+6  Neural Networks
+ A layer is a set of units that, as we have just described, are not connected to each
+other. The layer is called fully connected if, as in the diagram below, all of the inputs
+(i.e., 
+ in this case) are connected to every unit in the layer. A layer has
+input 
+ and output (also known as activation) 
+.
+
+
+
+.. .
+
+x1
+x2
+.. .
+xm
+f
+f
+f
+.. .
+f
+a1
+a2
+a3
+.. .
+an
+W, W0
+Since each unit has a vector of weights and a single offset, we can think of the
+weights of the whole layer as a matrix, 
+, and the collection of all the offsets as a
+vector 
+. If we have 
+ inputs,  units, and  outputs, then
+ is an 
+ matrix,
+ is an 
+ column vector,
+, the input, is an 
+ column vector,
+, the pre-activation, is an 
+ column vector,
+, the activation, is an 
+ column vector,
+and the output vector is
+The activation function  is applied element-wise to the pre-activation values .
+A single neural network generally combines multiple layers, most typically by
+feeding the outputs of one layer into the inputs of another layer.
+x1, x2, … xm
+x ∈Rm
+a ∈Rn
+W
+W0
+m
+n
+n
+W
+m × n
+W0
+n × 1
+X
+m × 1
+Z = W TX + W0
+n × 1
+A
+n × 1
+A = f(Z) = f(W TX + W0) .
+f
+Z
+6.2.2 Many layers
+
+6  Neural Networks
+ We have to start by establishing some nomenclature. We will use  to name a layer,
+and let 
+ be the number of inputs to the layer and 
+ be the number of outputs
+from the layer. Then, 
+ and 
+ are of shape 
+ and 
+, respectively.
+Note that the input to layer  is the output from layer 
+, so we have 
+,
+and as a result 
+ is of shape 
+, or equivalently 
+. Let 
+ be the
+activation function of layer . Then, the pre-activation outputs are the 
+ vector
+and the activation outputs are simply the 
+ vector
+Here’s a diagram of a many-layered network, with two blocks for each layer, one
+representing the linear part of the operation and one representing the non-linear
+activation function. We will use this structural decomposition to organize our
+algorithmic thinking and implementation.
+W 1
+W 1
+0
+f 1
+W 2
+W 2
+0
+f 2
+· · ·
+W L
+W L
+0
+f L
+X = A0
+Z1
+A1
+Z2
+A2
+AL−1
+ZL
+AL
+lay er 1
+lay er 2
+lay er L
+6.3 Choices of activation function
+There are many possible choices for the activation function. We will start by
+thinking about whether it’s really necessary to have an  at all.
+What happens if we let  be the identity? Then, in a network with  layers (we’ll
+leave out 
+ for simplicity, but keeping it wouldn’t change the form of this
+argument),
+So, multiplying out the weight matrices, we find that
+which is a linear function of 
+! Having all those layers did not change the
+representational capacity of the network: the non-linearity of the activation function
+is crucial.
+❓ Study Question
+Convince yourself that any function representable by any number of linear
+layers (where  is the identity function) can be represented by a single layer.
+l
+ml
+nl
+W l
+W l
+0
+ml × nl
+nl × 1
+l
+l −1
+ml = nl−1
+Al−1
+ml × 1
+nl−1 × 1
+f l
+l
+nl × 1
+Z l = W lTAl−1 + W l
+0
+nl × 1
+Al = f l(Z l) .
+f
+f
+L
+W0
+AL = W LTAL−1 = W LTW L−1T ⋯W 1TX .
+AL = W totalX ,
+X
+f
+It is technically possible to have
+different activation functions
+within the same layer, but, again,
+for convenience in specification
+and implementation, we generally
+have the same activation function
+within a layer.
+
+6  Neural Networks
+ Now that we are convinced we need a non-linear activation, let’s examine a few
+common choices. These are shown mathematically below, followed by plots of these
+functions.
+Step function:
+Rectified linear unit (ReLU):
+Sigmoid function: Also known as a logistic function. This can sometimes be
+interpreted as probability, because for any value of  the output is in 
+:
+Hyperbolic tangent: Always in the range 
+:
+Softmax function: Takes a whole vector 
+ and generates as output a vector
+ with the property that 
+, which means we can interpret it as
+a probability distribution over  items:
+−2
+−1
+1
+2
+−0.5
+0.5
+1
+1.5
+z
+step(z)
+−2
+−1
+1
+2
+−0.5
+0.5
+1
+1.5
+z
+ReLU(z)
+−4
+−2
+2
+4
+−1
+−0.5
+0.5
+1
+z
+σ(z)
+−4
+−2
+2
+4
+−1
+−0.5
+0.5
+1
+z
+tanh(z)
+step(z) = {0
+if z < 0
+1
+otherwise
+ReLU(z) = {
+= max(0, z)
+0
+if z < 0
+z
+otherwise
+z
+(0, 1)
+σ(z) =
+1
+1 + e−z
+(−1, 1)
+tanh(z) = ez −e−z
+ez + e−z
+Z ∈Rn
+A ∈(0, 1)n
+∑n
+i=1 Ai = 1
+n
+softmax(z) =
+⎡
+⎢
+⎣
+exp(z1)/ ∑i exp(zi)
+⋮
+exp(zn)/ ∑i exp(zi)
+⎤
+⎥
+⎦
+
+6  Neural Networks
+ The original idea for neural networks involved using the step function as an
+activation, but because the derivative of the step function is zero everywhere except
+at the discontinuity (and there it is undefined), gradient-descent methods won’t be
+useful in finding a good setting of the weights, and so we won’t consider the step
+function further. Step functions have been replaced, in a sense, by the sigmoid,
+ReLU, and tanh activation functions.
+❓ Study Question
+Consider sigmoid, ReLU, and tanh activations. Which one is most like a step
+function? Is there an additional parameter you could add to a sigmoid that
+would make it be more like a step function?
+❓ Study Question
+What is the derivative of the ReLU function? Are there some values of the input
+for which the derivative vanishes?
+ReLUs are especially common in internal (“hidden”) layers, sigmoid activations are
+common for the output for binary classification, and softmax activations are
+common for the output for multi-class classification (see Section 4.3.3 for an
+explanation).
+6.4 Loss functions and activation functions
+At layer 
+ which is the output layer, we need to specify a loss function, and
+possibly an activation function as well. Different loss functions make different
+assumptions about the range of values they will get as input and, as we have seen,
+different activation functions will produce output values in different ranges. When
+you are designing a neural network, it’s important to make these things fit together
+well. In particular, we will think about matching loss functions with the activation
+function in the last layer, 
+. Here is a table of loss functions and activations that
+make sense for them:
+Loss
+task
+squared
+linear
+regression
+nll
+sigmoid
+binary classification
+nllm
+softmax
+multi-class classification
+We explored squared loss in Chapter 2 and (nll and nllm) in Chapter 4.
+L,
+f L
+f L
+
+6  Neural Networks
+ 6.5 Error back-propagation
+We will train neural networks using gradient descent methods. It’s possible to use
+batch gradient descent, in which we sum up the gradient over all the points (as in
+Section 3.2 of Chapter 3) or stochastic gradient descent (SGD), in which we take a
+small step with respect to the gradient considering a single point at a time (as in
+Section 3.4 of Chapter 3).
+Our notation is going to get pretty hairy pretty quickly. To keep it as simple as we
+can, we’ll focus on computing the contribution of one data point 
+ to the gradient
+of the loss with respect to the weights, for SGD; you can simply sum up these
+gradients over all the data points if you wish to do batch descent.
+So, to do SGD for a training example 
+, we need to compute
+, where 
+ represents all weights 
+ in all the layers
+. This seems terrifying, but is actually quite easy to do using the chain
+rule.
+Remember that we are always computing the gradient of the loss function with
+respect to the weights for a particular value of 
+. That tells us how much we want
+to change the weights, in order to reduce the loss incurred on this particular
+training example.
+To get some intuition for how these derivations work, we’ll first suppose everything
+in our neural network is one-dimensional. In particular, we’ll assume there are
+ inputs and 
+ outputs at every layer. So layer  looks like:
+In the equation above, we’re using the lowercase letters 
+ to
+emphasize that all of these quantities are scalars just for the moment. We’ll look at
+the more general matrix case below.
+To use SGD, then, we want to compute 
+ and
+ for each layer  and each data point 
+. Below we’ll write
+“loss” as an abbreviation for 
+. Then our first quantity of interest is
+. The chain rule gives us the following.
+First, let’s look at the case 
+:
+x(i)
+(x, y)
+∇WL(NN(x; W), y)
+W
+W l, W l
+0
+l = (1, … , L)
+(x, y)
+6.5.1 First, suppose everything is one-dimensional
+ml = 1
+nl = 1
+l
+al = f l(zl),
+zl = wlal−1 + wl
+0.
+al, zl, wl, al−1, wl
+0
+∂L(NN(x; W), y)/∂wl
+∂L(NN(x; W), y)/∂wl
+0
+l
+(x, y)
+L(NN(x; W), y)
+∂loss/∂wl
+l = L
+∂loss
+∂wL = ∂loss
+∂aL ⋅∂aL
+∂zL ⋅∂zL
+∂wL
+= ∂loss
+∂aL ⋅(f L)′(zL) ⋅aL−1.
+Remember the chain rule! If
+ and 
+, so that
+, then
+a = f(b)
+b = g(c)
+a = f(g(c))
+da
+dc = da
+db ⋅db
+dc
+= f ′(b)g′(c)
+= f ′(g(c))g′(c)
+Check your understanding: why
+do we need exactly these quantities
+for SGD?
+
+6  Neural Networks
+ Now we can look at the case of general :
+Note that every multiplication above is scalar multiplication because every term in
+every product above is a scalar. And though we solved for all the other terms in the
+product, we haven’t solved for 
+ because the derivative will depend on
+which loss function you choose. Once you choose a loss function though, you
+should be able to compute this derivative.
+❓ Study Question
+Suppose you choose squared loss. What is 
+?
+❓ Study Question
+Check the derivations above yourself. You should use the chain rule and also
+solve for the individual derivatives that arise in the chain rule.
+❓ Study Question
+Check that the final layer (
+) case is a special case of the general layer  case
+above.
+❓ Study Question
+Derive 
+ for yourself, for both the final layer (
+) and
+general .
+❓ Study Question
+Does the 
+ case remind you of anything from earlier in this course?
+❓ Study Question
+Write out the full SGD algorithm for this neural network.
+l
+∂loss
+∂wl
+= ∂loss
+∂aL ⋅∂aL
+∂zL ⋅
+∂zL
+∂aL−1 ⋅∂aL−1
+∂zL−1 ⋯∂zl+1
+∂al
+⋅∂al
+∂zl ⋅∂zl
+∂wl
+= ∂loss
+∂aL ⋅(f L)′(zL) ⋅wL ⋅(f L−1)′(zL−1) ⋯⋅wl+1 ⋅(f l)′(zl) ⋅al−1
+= ∂loss
+∂zl
+⋅al−1.
+∂loss/∂aL
+∂loss/∂aL
+l = L
+l
+∂L(NN(x; W), y)/∂wl
+0
+l = L
+l
+L = 1
+
+6  Neural Networks
+ It’s pretty typical to run the chain rule from left to right like we did above. But, for
+where we’re going next, it will be useful to notice that it’s completely equivalent to
+write it in the other direction. So we can rewrite our result from above as follows:
+Next we’re going to do everything that we did above, but this time we’ll allow any
+number of inputs 
+ and outputs 
+ at every layer. First, we’ll tell you the results
+that correspond to our derivations above. Then we’ll talk about why they make
+sense. And finally we’ll derive them carefully.
+OK, let’s start with the results! Again, below we’ll be using “loss” as an
+abbreviation for 
+. Then,
+where
+or equivalently,
+First, compare each equation to its one-dimensional counterpart, and make sure
+you see the similarities. That is, compare the general weight derivatives in
+Equation 6.4 to the one-dimensional case in Equation 6.1. Compare the intermediate
+derivative of loss with respect to the pre-activations 
+ in Equation 6.5 to the one-
+dimensional case in Equation 6.2. And finally compare the version where we’ve
+substituted in some of the derivatives in Equation 6.6 to Equation 6.3. Hopefully
+∂loss
+∂wl
+= al−1 ⋅∂loss
+∂zl
+(6.1)
+∂loss
+∂zl
+= ∂al
+∂zl ⋅∂zl+1
+∂al
+⋯∂aL−1
+∂zL−1 ⋅
+∂zL
+∂aL−1 ⋅∂aL
+∂zL ⋅∂loss
+∂aL
+(6.2)
+= ∂al
+∂zl ⋅wl+1 ⋯∂aL−1
+∂zL−1 ⋅wL ⋅∂aL
+∂zL ⋅∂loss
+∂aL .
+(6.3)
+6.5.2 The general case
+ml
+nl
+L(NN(x; W), y)
+∂loss
+∂W l
+ml×nl
+= Al−1
+ml×1
+( ∂loss
+∂Z l )
+T
+1×nl
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+(6.4)
+∂loss
+∂Z l = ∂Al
+∂Z l ⋅∂Z l+1
+∂Al
+⋯⋅∂AL−1
+∂Z L−1 ⋅
+∂Z L
+∂AL−1 ⋅∂AL
+∂Z L ⋅∂loss
+∂AL
+(6.5)
+∂loss
+∂Z l = ∂Al
+∂Z l ⋅W l+1 ⋯⋅∂AL−1
+∂Z L−1 ⋅W L ⋅∂AL
+∂Z L ⋅∂loss
+∂AL .
+(6.6)
+Z l
+Even though we have reordered
+the gradients for notational
+convenience, when actually
+computing the product in
+Equation 6.3, it is computationally
+much cheaper to run the
+multiplications from right-to-left
+than from left-to-right. Convince
+yourself of this, by reasoning
+through the cost of the matrix
+multiplications in each case.
+There are lots of weights in a
+neural network, which means we
+need to compute a lot of gradients.
+Luckily, as we can see, the
+gradients associated with weights
+in earlier layers depend on the
+same terms as the gradients
+associated with weights in later
+layers. This means we can reuse
+terms and save ourselves some
+computation!
+
+6  Neural Networks
+ you see how the forms are very analogous. But in the matrix case, we now have to
+be careful about the matrix dimensions. We’ll check these matrix dimensions below.
+Let’s start by talking through each of the terms in the matrix version of these
+equations. Recall that loss is a scalar, and 
+ is a matrix of size 
+. You can
+read about the conventions in the course for derivatives starting in this chapter in
+Appendix A. By these conventions (not the only possible conventions!), we have
+that 
+ will be a matrix of size 
+ whose 
+ entry is the scalar
+. In some sense, we’re just doing a bunch of traditional scalar
+derivatives, and the matrix notation lets us write them all simultaneously and
+succinctly. In particular, for SGD, we need to find the derivative of the loss with
+respect to every scalar component of the weights because these are our model’s
+parameters and therefore are the things we want to update in SGD.
+The next quantity we see in Equation 6.4 is 
+, which we recall has size 
+ (or
+equivalently 
+ since it represents the outputs of the 
+ layer). Finally, we
+see 
+. Again, loss is a scalar, and 
+ is a 
+ vector. So by the
+conventions in Appendix A, we have that 
+ has size 
+. The transpose
+then has size 
+. Now you should be able to check that the dimensions all make
+sense in Equation 6.4; in particular, you can check that inner dimensions agree in
+the matrix multiplication and that, after the multiplication, we should be left with
+something that has the dimensions on the lefthand side.
+Now let’s look at Equation 6.6. We’re computing 
+ so that we can use it in
+Equation 6.4. The weights are familiar. The one part that remains is terms of the
+form 
+. Checking out Appendix A, we see that this term should be a matrix
+of size 
+ since 
+ and 
+ both have size 
+. The 
+ entry of this matrix
+is 
+. This scalar derivative is something that you can compute when you
+know your activation function. If you’re not using a softmax activation function, 
+typically is a function only of 
+, which means that 
+ should equal 0
+whenever 
+, and that 
+.
+❓ Study Question
+Compute the dimensions of every term in Equation 6.5 and Equation 6.6 using
+Appendix A. After you’ve done that, check that all the matrix multiplications
+work; that is, check that the inner dimensions agree and that the lefthand side
+and righthand side of these equations have the same dimensions.
+❓ Study Question
+If I use the identity activation function, what is 
+ for any ? What is the
+full matrix 
+?
+W l
+ml × nl
+∂loss/∂W l
+ml × nl
+(i, j)
+∂loss/∂W l
+i,j
+Al−1
+ml × 1
+nl−1 × 1
+l −1
+∂loss/∂Z l
+Z l
+nl × 1
+∂loss/∂Z l
+nl × 1
+1 × nl
+∂loss/∂Z l
+∂Al/∂Z l
+nl × nl
+Al
+Z l
+nl × 1
+(i, j)
+∂Al
+j/∂Z l
+i
+Al
+j
+Z l
+j
+∂Al
+j/∂Z l
+i
+i ≠j
+∂Al
+j/∂Z l
+j = (f l)′(Z l
+j)
+∂Al
+j/∂Z l
+j
+j
+∂Al/∂Z l
+
+6  Neural Networks
+ You can use everything above without deriving it yourself. But if you want to find
+the gradients of loss with respect to 
+ (which we need for SGD!), then you’ll want
+to know how to actually do these derivations. So next we’ll work out the
+derivations.
+The key trick is to just break every equation down into its scalar meaning. For
+instance, the 
+ element of 
+ is 
+. If you think about it for a
+moment (and it might help to go back to the one-dimensional case), the loss is a
+function of the elements of 
+, and the elements of 
+ are a function of the 
+.
+There are 
+ elements of 
+, so we can use the chain rule to write
+To figure this out, let’s remember that 
+. We can write one
+element of the 
+ vector, then, as 
+. It follows that
+ will be zero except when 
+ (check you agree!). So we can rewrite
+Equation 6.7 as
+Finally, then, we match entries of the matrices on both sides of the equation above
+to recover Equation 6.4.
+❓ Study Question
+Check that Equation 6.8 and Equation 6.4 say the same thing.
+❓ Study Question
+Convince yourself that 
+ by comparing the entries of the
+matrices on both sides on the equality sign.
+❓ Study Question
+Convince yourself that Equation 6.5 is true.
+❓ Study Question
+Apply the same reasoning to find the gradients of 
+ with respect to 
+.
+6.5.3 Derivations for the general case
+W l
+0
+(i, j)
+∂loss/∂W l
+∂loss/∂W l
+i,j
+Z l
+Z l
+W l
+i,j
+nl
+Z l
+∂loss
+∂W l
+i,j
+=
+nl
+∑
+k=1
+∂loss
+∂Z l
+k
+∂Z l
+k
+∂W l
+i,j
+.
+(6.7)
+Z l = (W l)⊤Al−1 + W l
+0
+Z l
+Z l
+b = ∑ml
+a=1 W l
+a,bAl−1
+a
++ (W l
+0)b
+∂Z l
+k/∂W l
+i,j
+k = j
+∂loss
+∂W l
+i,j
+= ∂loss
+∂Z l
+j
+∂Z l
+j
+∂W l
+i,j
+= ∂loss
+∂Z l
+j
+Al−1
+i
+.
+(6.8)
+∂Z l/∂Al−1 = W l
+loss
+W l
+0
+
+6  Neural Networks
+ This general process of computing the gradients of the loss with respect to the
+weights is called error back-propagation.
+The idea is that we first do a forward pass to compute all the  and  values at all the
+layers, and finally the actual loss. Then, we can work backward and compute the
+gradient of the loss with respect to the weights in each layer, starting at layer  and
+going back to layer 1.
+W 1
+W 1
+0
+f 1
+W 2
+W 2
+0
+f 2
+· · ·
+W L
+W L
+0
+f L
+Loss
+X = A0
+Z1
+A1
+Z2
+A2
+AL−1
+ZL
+AL
+y
+∂loss
+∂AL
+∂loss
+∂ZL
+∂loss
+∂AL−1
+∂loss
+∂A2
+∂loss
+∂Z2
+∂loss
+∂A1
+∂loss
+∂Z1
+If we view our neural network as a sequential composition of modules (in our work
+so far, it has been an alternation between a linear transformation with a weight
+matrix, and a component-wise application of a non-linear activation function), then
+we can define a simple API for a module that will let us compute the forward and
+backward passes, as well as do the necessary weight updates for gradient descent.
+Each module has to provide the following “methods.” We are already using letters
+ with particular meanings, so here we will use  as the vector input to the
+module and  as the vector output:
+forward: 
+backward: 
+weight grad: 
+ only needed for modules that have weights
+In homework we will ask you to implement these modules for neural network
+components, and then use them to construct a network and train it as described in
+the next section.
+6.6 Training
+Here we go! Here’s how to do stochastic gradient descent training on a feed-
+forward neural network. After this pseudo-code, we motivate the choice of
+initialization in lines 2 and 3. The actual computation of the gradient values (e.g.,
+) is not directly defined in this code, because we want to make the
+structure of the computation clear.
+❓ Study Question
+6.5.4 Reflecting on backpropagation
+a
+z
+L
+a, x, y, z
+u
+v
+u →v
+u, v, ∂L/∂v →∂L/∂u
+u, ∂L/∂v →∂L/∂W
+W
+∂loss/∂AL
+Notice that the backward pass does
+not output 
+, even though the
+forward pass maps from  to . In
+the backward pass, we are always
+directly computing and ``passing
+around’’ gradients of the loss.
+∂v/∂u
+u
+v
+
+6  Neural Networks
+ What is 
+?
+❓ Study Question
+Which terms in the code below depend on 
+?
+procedure SGD-NEURAL-NET(
+)
+for 
+ to  do
+end for
+for 
+ to  do
+//forward pass to compute 
+for 
+ to  do
+end for
+for 
+ down to  do//error back-propagation
+//SGD update
+end for
+end for
+end procedure
+Initializing 
+ is important; if you do it badly there is a good chance the neural
+network training won’t work well. First, it is important to initialize the weights to
+random values. We want different parts of the network to tend to “address”
+different aspects of the problem; if they all start at the same weights, the symmetry
+will often keep the values from moving in useful directions. Second, many of our
+activation functions have (near) zero slope when the pre-activation  values have
+large magnitude, so we generally want to keep the initial weights small so we will
+be in a situation where the gradients are non-zero, so that gradient descent will
+have some useful signal about which way to go.
+One good general-purpose strategy is to choose each weight at random from a
+Gaussian (normal) distribution with mean 0 and standard deviation 
+ where
+ is the number of inputs to the unit.
+❓ Study Question
+∂Z l/∂W l
+f L
+1:
+Dn, T, L, (m1, … , mL), (f 1, … , f L), Loss
+2:
+l ←1
+L
+3:
+W l
+ij ∼Gaussian(0, 1/ml)
+4:
+W l
+0j ∼Gaussian(0, 1)
+5:
+6:
+t ←1
+T
+7:
+i ←random sample from {1, … , n}
+8:
+A0 ←x(i)
+AL
+9:
+l ←1
+L
+10:
+Z l ←W lTAl−1 + W l
+0
+11:
+Al ←f l(Z l)
+12:
+13:
+loss ←Loss(AL,  y(i))
+14:
+l ←L
+1
+15:
+∂loss
+∂Al
+←{
+∂Z l+1
+∂Al
+⋅
+∂loss
+∂Z l+1
+if l < L,
+∂loss
+∂AL
+otherwise
+16:
+∂loss
+∂Z l ←∂Al
+∂Z l ⋅∂loss
+∂Al
+17:
+∂loss
+∂W l ←Al−1 ( ∂loss
+∂Z l )
+⊤
+18:
+∂loss
+∂W l
+0
+←∂loss
+∂Z l
+19:
+W l ←W l −η(t) ∂loss
+∂W l
+20:
+W l
+0 ←W l
+0 −η(t) ∂loss
+∂W l
+0
+21:
+22:
+23:
+W
+z
+(1/m)
+m
+
+6  Neural Networks
+ If the input  to this unit is a vector of 1’s, what would the expected pre-
+activation  value be with these initial weights?
+We write this choice (where 
+ means “is drawn randomly from the distribution”) as
+It will often turn out (especially for fancier activations and loss functions) that
+computing 
+ is easier than computing 
+ and 
+ So, we may instead ask for
+an implementation of a loss function to provide a backward method that computes
+ directly.
+6.7 Optimizing neural network parameters
+Because neural networks are just parametric functions, we can optimize loss with
+respect to the parameters using standard gradient-descent software, but we can take
+advantage of the structure of the loss function and the hypothesis class to improve
+optimization. As we have seen, the modular function-composition structure of a
+neural network hypothesis makes it easy to organize the computation of the
+gradient. As we have also seen earlier, the structure of the loss function as a sum
+over terms, one per training data point, allows us to consider stochastic gradient
+methods. In this section we’ll consider some alternative strategies for organizing
+training, and also for making it easier to handle the step-size parameter.
+Assume that we have an objective of the form
+where  is the function computed by a neural network, and 
+ stands for all the
+weight matrices and vectors in the network.
+Recall that, when we perform batch (or the vanilla) gradient descent, we use the
+update rule
+which is equivalent to
+So, we sum up the gradient of loss at each training point, with respect to 
+, and
+then take a step in the negative direction of the gradient.
+x
+z
+∼
+W l
+ij ∼Gaussian (0,
+1
+ml ).
+∂loss
+∂Z L
+∂loss
+∂AL
+∂AL
+∂Z L .
+∂loss/∂Z L
+6.7.1 Batches
+J(W) = 1
+n
+n
+∑
+i=1
+L(h(x(i); W), y(i)) ,
+h
+W
+Wt = Wt−1 −η∇WJ(Wt−1) ,
+Wt = Wt−1 −η
+n
+∑
+i=1
+∇WL(h(x(i); Wt−1), y(i)) .
+W
+
+6  Neural Networks
+ In stochastic gradient descent, we repeatedly pick a point 
+ at random from
+the data set, and execute a weight update on that point alone:
+As long as we pick points uniformly at random from the data set, and decrease  at
+an appropriate rate, we are guaranteed, with high probability, to converge to at least
+a local optimum.
+These two methods have offsetting virtues. The batch method takes steps in the
+exact gradient direction but requires a lot of computation before even a single step
+can be taken, especially if the data set is large. The stochastic method begins moving
+right away, and can sometimes make very good progress before looking at even a
+substantial fraction of the whole data set, but if there is a lot of variability in the
+data, it might require a very small  to effectively average over the individual steps
+moving in “competing” directions.
+An effective strategy is to “average” between batch and stochastic gradient descent
+by using mini-batches. For a mini-batch of size 
+, we select 
+ distinct data points
+uniformly at random from the data set and do the update based just on their
+contributions to the gradient
+Most neural network software packages are set up to do mini-batches.
+❓ Study Question
+For what value of 
+ is mini-batch gradient descent equivalent to stochastic
+gradient descent? To batch gradient descent?
+Picking 
+ unique data points at random from a large data-set is potentially
+computationally difficult. An alternative strategy, if you have an efficient procedure
+for randomly shuffling the data set (or randomly shuffling a list of indices into the
+data set) is to operate in a loop, roughly as follows:
+procedure Mini-Batch-SGD(NN, data, K)
+while not done do
+Random-Shuffle(data)
+for 
+ to 
+ do
+Batch-Gradient-Update(NN, data[(i-1)K : iK])
+end for
+end while
+end procedure
+(x(i), y(i))
+Wt = Wt−1 −η∇WL(h(x(i); Wt−1), y(i)) .
+η
+η
+K
+K
+Wt = Wt−1 −η
+K
+K
+∑
+i=1
+∇WL(h(x(i); Wt−1), y(i)) .
+K
+K
+1:
+2:
+n ←length(data)
+3:
+4:
+5:
+i ←1
+⌈n
+K ⌉
+6:
+7:
+8:
+9:
+In line 4 of the algorithm above, 
+is known as the ceiling function; it
+returns the smallest integer greater
+than or equal to its input. E.g.,
+ and 
+.
+⌈⋅⌉
+⌈2.5⌉= 3
+⌈3⌉= 3
+
+6  Neural Networks
+ Picking a value for  is difficult and time-consuming. If it’s too small, then
+convergence is slow and if it’s too large, then we risk divergence or slow
+convergence due to oscillation. This problem is even more pronounced in stochastic
+or mini-batch mode, because we know we need to decrease the step size for the
+formal guarantees to hold.
+It’s also true that, within a single neural network, we may well want to have
+different step sizes. As our networks become deep (with increasing numbers of
+layers) we can find that magnitude of the gradient of the loss with respect the
+weights in the last layer, 
+, may be substantially different from the
+gradient of the loss with respect to the weights in the first layer 
+. If you
+look carefully at Equation 6.6, you can see that the output gradient is multiplied by
+all the weight matrices of the network and is “fed back” through all the derivatives
+of all the activation functions. This can lead to a problem of exploding or vanishing
+gradients, in which the back-propagated gradient is much too big or small to be
+used in an update rule with the same step size.
+So, we can consider having an independent step-size parameter for each weight, and
+updating it based on a local view of how the gradient updates have been going.
+Some common strategies for this include momentum (“averaging” recent gradient
+updates), Adadelta (take larger steps in parts of the space where 
+ is nearly flat),
+and Adam (which combines these two previous ideas). Details of these approaches
+are described in Section B.1.
+6.8 Regularization
+So far, we have only considered optimizing loss on the training data as our objective
+for neural network training. But, as we have discussed before, there is a risk of
+overfitting if we do this. The pragmatic fact is that, in current deep neural networks,
+which tend to be very large and to be trained with a large amount of data,
+overfitting is not a huge problem. This runs counter to our current theoretical
+understanding and the study of this question is a hot area of research. Nonetheless,
+there are several strategies for regularizing a neural network, and they can
+sometimes be important.
+One group of strategies can, interestingly, be shown to have similar effects to each
+other: early stopping, weight decay, and adding noise to the training data.
+Early stopping is the easiest to implement and is in fairly common use. The idea is
+to train on your training set, but at every epoch (a pass through the whole training
+6.7.2 Adaptive step-size
+η
+∂loss/∂WL
+∂loss/∂W1
+J(W)
+6.8.1 Methods related to ridge regression
+This section is very strongly
+influenced by Sebastian Ruder’s
+excellent blog posts on the topic:
+{ruder.io/optimizing-gradient-
+descent}
+Result is due to Bishop, described
+in his textbook and here.
+Warning: If you use your
+validation set in this way – i.e., to
+
+6  Neural Networks
+ set, or possibly more frequently), evaluate the loss of the current 
+ on a validation
+set. It will generally be the case that the loss on the training set goes down fairly
+consistently with each iteration, the loss on the validation set will initially decrease,
+but then begin to increase again. Once you see that the validation loss is
+systematically increasing, you can stop training and return the weights that had the
+lowest validation error.
+Another common strategy is to simply penalize the norm of all the weights, as we
+did in ridge regression. This method is known as weight decay, because when we
+take the gradient of the objective
+we end up with an update of the form
+This rule has the form of first “decaying” 
+ by a factor of 
+ and then
+taking a gradient step.
+Finally, the same effect can be achieved by perturbing the 
+ values of the training
+data by adding a small amount of zero-mean normally distributed noise before each
+gradient computation. It makes intuitive sense that it would be more difficult for
+the network to overfit to particular training data if they are changed slightly on
+each training step.
+Dropout is a regularization method that was designed to work with deep neural
+networks. The idea behind it is, rather than perturbing the data every time we train,
+we’ll perturb the network! We’ll do this by randomly, on each training step,
+selecting a set of units in each layer and prohibiting them from participating. Thus,
+all of the units will have to take a kind of “collective” responsibility for getting the
+answer right, and will not be able to rely on any small subset of the weights to do
+all the necessary computation. This tends also to make the network more robust to
+data perturbations.
+During the training phase, for each training example, for each unit, randomly with
+probability  temporarily set 
+. There will be no contribution to the output and
+no gradient update for the associated unit.
+When we are done training and want to use the network to make predictions, we
+multiply all weights by  to achieve the same average activation levels.
+W
+J(W) =
+n
+∑
+i=1
+L(NN(x(i)), y(i); W) + λ∥W∥2
+Wt = Wt−1 −η ((∇WL(NN(x(i)), y(i); Wt−1)) + 2λWt−1)
+= Wt−1(1 −2λη) −η (∇WL(NN(x(i)), y(i); Wt−1)) .
+Wt−1
+(1 −2λη)
+x(i)
+6.8.2 Dropout
+p
+aℓ
+j = 0
+p
+set the number of epochs (or any
+other hyperparameter associated
+with your learning algorithm) –
+then error on the validation set no
+longer provides a “pure” estimate
+of error on the test set (i.e.,
+generalization error). This is
+because information about the
+validation set has “leaked” into the
+design of your algorithm. See also
+the discussion on Validation and
+Cross-Validation in Chapter 2.
+
+6  Neural Networks
+ Implementing dropout is easy! In the forward pass during training, we let
+where  denotes component-wise product and 
+ is a vector of ’s and ’s drawn
+randomly with probability . The backwards pass depends on 
+, so we do not need
+to make any further changes to the algorithm.
+It is common to set  to 
+, but this is something one might experiment with to get
+good results on your problem and data.
+Another strategy that seems to help with regularization and robustness in training
+is batch normalization.
+It was originally developed to address a problem of covariate shift: that is, if you
+consider the second layer of a two-layer neural network, the distribution of its input
+values is changing over time as the first layer’s weights change. Learning when the
+input distribution is changing is extra difficult: you have to change your weights to
+improve your predictions, but also just to compensate for a change in your inputs
+(imagine, for instance, that the magnitude of the inputs to your layer is increasing
+over time—then your weights will have to decrease, just to keep your predictions
+the same).
+So, when training with mini-batches, the idea is to standardize the input values for
+each mini-batch, just in the way that we did it in Section 5.3.3 of Chapter 5,
+subtracting off the mean and dividing by the standard deviation of each input
+dimension. This means that the scale of the inputs to each layer remains the same,
+no matter how the weights in previous layers change. However, this somewhat
+complicates matters, because the computation of the weight updates will need to
+take into account that we are performing this transformation. In the modular view,
+batch normalization can be seen as a module that is applied to 
+, interposed after
+the product with 
+ and before input to 
+.
+Although batch-norm was originally justified based on the problem of covariate
+shift, it’s not clear that that is actually why it seems to improve performance. Batch
+normalization can also end up having a regularizing effect for similar reasons that
+adding noise and dropout do: each mini-batch of data ends up being mildly
+perturbed, which prevents the network from exploiting very particular values of
+the data points. For those interested, the equations for batch normalization,
+including a derivation of the forward pass and backward pass, are described in
+Section B.2.
+aℓ= f(zℓ) ∗dℓ
+∗
+dℓ
+0
+1
+p
+aℓ
+p
+0.5
+6.8.3 Batch normalization
+zl
+W l
+f l
+For more details see
+arxiv.org/abs/1502.03167.
+We follow here the suggestion from
+the original paper of applying
+batch normalization before the
+activation function. Since then it
+has been shown that, in some
+cases, applying it after works a bit
+better. But there aren’t any definite
+findings on which works better
+and when.
+
+6  Neural Networks
+ 
+6  Neural Networks

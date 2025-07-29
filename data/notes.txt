@@ -441,8 +441,7 @@ problems, or for particular hypotheses classes. Some algorithms are not easily s
 as trying to optimize a particular criterion. In fact, a historically important method
 for finding linear classifiers, the perceptron algorithm, has this character.
 h
-x
- We had legacy PDF notes that used mixed conventions for data matrices: “each row as a
+x We had legacy PDF notes that used mixed conventions for data matrices: “each row as a
 data point” and “each column as a data point”.
 We are standardizing to “each row as a data point.” Thus, 
  aligns with 
@@ -1531,8 +1530,7 @@ regression or  for ridge regression?
 θ
 θ0
 k
-λ
- This page contains all content from the legacy PDF notes; gradient descent chapter.
+λ This page contains all content from the legacy PDF notes; gradient descent chapter.
 As we phase out the PDF, this page may receive updates not reflected in the static PDF.
 In the previous chapter, we showed how to describe an interesting objective
 function for machine learning, but we need a way to find the optimal
@@ -2100,8 +2098,7 @@ t
 η(t)
 f
 Θ
-f
- This page contains all content from the legacy PDF notes; classification chapter.
+f This page contains all content from the legacy PDF notes; classification chapter.
 As we phase out the PDF, this page may receive updates not reflected in the static PDF.
 4.1 Classification
 Classification is a machine learning problem seeking to map from inputs 
@@ -3043,8 +3040,7 @@ n
 i=1
 L01(g(i), y(i)) ,
 g(i)
-h(x(i))
- This page contains all content from the legacy PDF notes; features chapter.
+h(x(i)) This page contains all content from the legacy PDF notes; features chapter.
 As we phase out the PDF, this page may receive updates not reflected in the static PDF.
 Linear regression and classification are powerful tools, but in the real world, data
 often exhibit non-linear behavior that cannot immediately be captured by the linear
@@ -3453,8 +3449,7 @@ j
 5.3.3 Numeric values
 k
 ϕ
-k
- This page contains all content from the legacy PDF notes; neural networks chapter.
+k This page contains all content from the legacy PDF notes; neural networks chapter.
 As we phase out the PDF, this page may receive updates not reflected in the static PDF.
 You’ve probably been hearing a lot about “neural networks.” Now that we have
 several useful machine-learning concepts (hypothesis classes, classification,
@@ -4954,8 +4949,7 @@ and when.
 
 6  Neural Networks
  
-6  Neural Networks
- This page contains all content from the legacy PDF notes; convolutional neural networks
+6  Neural Networks This page contains all content from the legacy PDF notes; convolutional neural networks
 chapter.
 As we phase out the PDF, this page may receive updates not reflected in the static PDF.
 So far, we have studied what are called fully connected neural networks, in which all
@@ -5432,8 +5426,7 @@ y
 a1
 a1
 a2
-∇(x,y) max(x, y)
- This page contains all content from the legacy PDF notes; autoencoders chapter.
+∇(x,y) max(x, y) This page contains all content from the legacy PDF notes; autoencoders chapter.
 As we phase out the PDF, this page may receive updates not reflected in the static PDF.
 In previous chapters, we have largely focused on classification and regression
 problems, where we use supervised learning with training samples that have both
@@ -5698,8 +5691,7 @@ The idea of good embeddings will play a central role when we discuss attention
 mechanisms in Chapter 9, where embeddings dynamically adjust based on context
 (via the so-called attention mechanism), enabling a more nuanced understanding of
 language.
-embeddingparis −embeddingfrance + embeddingitaly ≈embeddingrome
- We are actively overhauling the Transformers chapter from the legacy PDF notes to
+embeddingparis −embeddingfrance + embeddingitaly ≈embeddingrome We are actively overhauling the Transformers chapter from the legacy PDF notes to
 enhance clarity and presentation. Please feel free to raise issues or request more
 explanation on specific topics.
 Transformers are a very recent family of architectures that were originally
@@ -6425,8 +6417,7 @@ n kn
 Y = AV
 M
 j
-0, 1, . . . , j
-  This page contains all content from the legacy PDF notes; markov decision processes
+0, 1, . . . , j This page contains all content from the legacy PDF notes; markov decision processes
 chapter.
 As we phase out the PDF, this page may receive updates not reflected in the static PDF.
 Consider a robot learning to navigate through a maze, a game-playing AI
@@ -7036,8 +7027,7 @@ Q
 ϵ
 ∥Qold −Qnew∥max < ϵ ⟹πQnew = π∗
 ∥VπQnew −Vπ∗∥max
-(s, a)
- This page contains all content from the legacy PDF notes; reinforcement learning chapter.
+(s, a) This page contains all content from the legacy PDF notes; reinforcement learning chapter.
 As we phase out the PDF, this page may receive updates not reflected in the static PDF.
 Reinforcement learning (RL) is a type of machine learning where an agent learns to
 make decisions by interacting with an environment. Unlike other learning
@@ -7784,8 +7774,7 @@ Rp(a, r)
 h
 a
 R(a, r)
-S
- This page contains all content from the legacy PDF notes; non-parametric models chapter.
+S This page contains all content from the legacy PDF notes; non-parametric models chapter.
 As we phase out the PDF, this page may receive updates not reflected in the static PDF.
 Neural networks have adaptable complexity, in the sense that we can try different
 structural models and use cross validation to find one that works well on our data.
@@ -8774,8 +8763,7 @@ negative. We can make better
 predictions, and better capture the
 presumed true effect, if we cluster
 this data and then model the trend
-in each cluster separately.
-  What are some conventions for derivatives of matrices and vectors? It will always
+in each cluster separately. What are some conventions for derivatives of matrices and vectors? It will always
 work to explicitly write all indices and treat everything as scalars, but we
 introduce here some shortcuts that are often faster to use and helpful for
 understanding.
@@ -9404,8 +9392,7 @@ dθd
 n X T
 da (Xabθb −Ya)
 = 2
-n [XT (Xθ −Y )]d ,
- B.1 Strategies towards adaptive step-size
+n [XT (Xθ −Y )]d , B.1 Strategies towards adaptive step-size
 We’ll start by looking at the notion of a running average. It’s a computational
 strategy for estimating a possibly weighted average of a sequence of data. Let our
 data sequence be 
@@ -9836,8 +9823,7 @@ K σi
 (K δjk −1 −(Zik −μi)(Zij −μi)
 σ2
 i
-).
-  In which we try to describe the outlines of the “lifecycle” of supervised learning,
+). In which we try to describe the outlines of the “lifecycle” of supervised learning,
 including hyperparameter tuning and evaluation of the final product.
 C.1 General case
 We start with a very generic setting.

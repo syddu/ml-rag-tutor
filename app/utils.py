@@ -1,5 +1,4 @@
 from sentence_transformers import SentenceTransformer
-import openai
 import faiss
 import json
 import numpy as np
@@ -11,7 +10,7 @@ def retrieve_top_k_chunks_sentencetransformers(query: str, k = 1):
     """
     Uses faiss to retrieve the top k most relevant text chunks based on a query and embeddings encoded with sentencetransformers
     """
-    chunk_embeddings = np.array(json.load(open(f"{PATH_TO_SENTENCETRANSFORMERS_EMBEDDINGS}/embeddings.json", "r", encoding="utf-8")), dtype='float32')
+    chunk_embeddings = np.array(json.load(open(f"{PATH_TO_SENTENCETRANSFORMERS_EMBEDDINGS}/contextualized_embeddings.json", "r", encoding="utf-8")), dtype='float32')
     vector_dimensions = chunk_embeddings.shape[1]
     index = faiss.IndexFlatL2(vector_dimensions)
     faiss.normalize_L2(chunk_embeddings)
@@ -23,7 +22,7 @@ def retrieve_top_k_chunks_sentencetransformers(query: str, k = 1):
     faiss.normalize_L2(query_embedding)
     
     distances, indices = index.search(query_embedding, k)
-    chunks = json.load(open(f"{PATH_TO_CHUNKS}/chunks.json", "r", encoding="utf-8"))
+    chunks = json.load(open(f"{PATH_TO_CHUNKS}/contextualized_chunks.json", "r", encoding="utf-8"))
     res = [chunks[i] for i in indices[0]]
     
     return res
