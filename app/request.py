@@ -15,5 +15,5 @@ def send_test_event(query):
     return response
 
 if __name__ == "__main__":
-    query = "What are the bootstrapping and random forest algorithms?"
+    query = """Describe the gradient descent algorithm in detail to me."""
     send_test_event(query)

@@ -2,9 +2,8 @@ from openai import OpenAI
 from dotenv import load_dotenv
 import os
 from utils import retrieve_top_k_chunks_sentencetransformers
-from utils import retrieve_top_k_chunks_openai #not used
 
-PATH_TO_PROMPTS = "/Users/sydneydu/Projects/intro_ml_rag_assistant/prompts"
+PATH_TO_PROMPTS = "../prompts"
 load_dotenv()
 SYSTEM_PROMPT = open(f"{PATH_TO_PROMPTS}/system.txt", "r").read().strip()
     
@@ -21,7 +20,7 @@ def call_llm(query: str, context = []):
         },
         {
             "role": "user",
-            "content": f"Question: {query}?\n Context from the course textbook: {context}"
+            "content": f"Question: {query}?\n 20 contextualized sections retrieved from the course textbook: {context}"
         }
         ]
     )

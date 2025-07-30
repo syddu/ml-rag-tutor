@@ -9,12 +9,11 @@ from dotenv import load_dotenv
 import numpy as np
 from contextualize_chunks import contextualize_all_chunks
 
-PATH_TO_RAW_DATA = "/Users/sydneydu/Projects/intro_ml_rag_assistant/raw_data"
-PATH_TO_TEXT_DATA = "/Users/sydneydu/Projects/intro_ml_rag_assistant/data"
-PATH_TO_CHUNKS = "/Users/sydneydu/Projects/intro_ml_rag_assistant/chunks"
-PATH_TO_SENTENCETRANSFORMERS_EMBEDDINGS = "/Users/sydneydu/Projects/intro_ml_rag_assistant/embeddings/sentencetransformers"
-PATH_TO_OPENAI_EMBEDDINGS = "/Users/sydneydu/Projects/intro_ml_rag_assistant/embeddings/openai"
-
+PATH_TO_RAW_DATA = "/raw_data"
+PATH_TO_TEXT_DATA = "/data"
+PATH_TO_CHUNKS = "/chunks"
+PATH_TO_SENTENCETRANSFORMERS_EMBEDDINGS = "/embeddings/sentencetransformers"
+PATH_TO_OPENAI_EMBEDDINGS = "/embeddings/openai"
 def convert_raw_data_to_txt(path_to_raw_data = PATH_TO_RAW_DATA, path_to_text_data = PATH_TO_TEXT_DATA):
     """
     Takes pdf data stored in path_to_raw_data and saves it to a txt file in path_to_text_data
@@ -82,22 +81,13 @@ def embed_chunks_openai(contextualized_chunks = None, model_name = "text-embeddi
     with open(f"{PATH_TO_OPENAI_EMBEDDINGS}/contextualized_embeddings.json", "w", encoding="utf-8") as f:
         f.write(json.dumps(embeddings))
     return embeddings
-
-def tfidf_vectorizer(contextualized_chunks = None):
-    vectorizer = TfidfVectorizer()
-    if contextualized_chunks is None:
-        contextualized_chunks = json.load(open(f"{PATH_TO_CHUNKS}/contextualized_chunks.json", "r", encoding = "utf-8"))
-    tfidf_matrix = vectorizer.fit_transform(contextualized_chunks)
-    return tfidf_matrix
     
 def prepare_data():
     chunk_text_data_by_chapter(convert_raw_data_to_txt())
     # contextualized_chunks = contextualize_all_chunks() #Takes VERY long time to contextualize all, only do it if the whole text changes drastically
     embed_chunks_openai()
-    tfidf_vectorizer()
 
 if __name__ == "__main__":
     #embed more chunks as needed
     # prepare_data()
-    print(tfidf_vectorizer())
     pass

@@ -5,3 +5,7 @@ It performs semantic search over the 6.3900 course textbook content (which I upl
 The system prompt is contained in the prompts folder, while the LLM call is in model.py. Will likely change up the prompts to see how performance is affected.
 
 Currently set to using the top 20 chunks as context, though this number can be increased or decreased in model.py.
+
+To test, change prompt in main block of request.py and run in two separate terminals:
+uvicorn main:app --reload
+python3 request.py
